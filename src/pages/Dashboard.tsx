@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,9 @@ import {
   Trash2
 } from "lucide-react";
 import { User } from "@/types/inspection";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardProps {
   user?: User;
@@ -33,28 +36,122 @@ interface DashboardProps {
   onLogout?: () => void;
 }
 
+interface InspectionData {
+  id: string;
+  driver_name: string;
+  created_at: string;
+  vehicles: {
+    marca_modelo: string;
+    placa: string;
+    vehicle_type: string;
+  };
+  inspection_items: {
+    status: string;
+  }[];
+}
+
+interface Stats {
+  totalInspections: number;
+  completedToday: number;
+  pendingInspections: number;
+  activeVehicles: number;
+  criticalIssues: number;
+  monthlyGrowth: number;
+}
+
 const Dashboard = ({ 
   user = { email: "demo@nsa.com", name: "Demo User", role: "operator" as const }, 
-  onNewInspection = () => {}, 
+  onNewInspection, 
   onLogout = () => {} 
 }: DashboardProps = {}) => {
+  const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState("today");
+  const [inspections, setInspections] = useState<InspectionData[]>([]);
+  const [stats, setStats] = useState<Stats>({
+    totalInspections: 0,
+    completedToday: 0,
+    pendingInspections: 0,
+    activeVehicles: 0,
+    criticalIssues: 0,
+    monthlyGrowth: 0
+  });
+  const [loading, setLoading] = useState(true);
 
-  // Mock data for demonstration
-  const mockInspections = [
-    { id: 1, vehicle: "Honda Civic LXR 2020", plate: "ABC-1234", driver: "João Silva", status: "completed", issues: 2, date: "2024-01-15" },
-    { id: 2, vehicle: "Toyota Corolla XEI 2019", plate: "XYZ-5678", driver: "Maria Santos", status: "pending", issues: 0, date: "2024-01-15" },
-    { id: 3, vehicle: "Honda CB 600F 2021", plate: "MOT-9876", driver: "Carlos Lima", status: "completed", issues: 1, date: "2024-01-14" },
-    { id: 4, vehicle: "Volkswagen Gol 2018", plate: "DEF-4567", driver: "Ana Costa", status: "completed", issues: 3, date: "2024-01-14" },
-  ];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  const mockStats = {
-    totalInspections: 147,
-    completedToday: 12,
-    pendingInspections: 8,
-    activeVehicles: 85,
-    criticalIssues: 5,
-    monthlyGrowth: 23.5
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch recent inspections
+      const { data: inspectionsData, error: inspectionsError } = await supabase
+        .from('inspections')
+        .select(`
+          id,
+          driver_name,
+          created_at,
+          vehicles (
+            marca_modelo,
+            placa,
+            vehicle_type
+          ),
+          inspection_items (
+            status
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (inspectionsError) throw inspectionsError;
+
+      // Fetch vehicles count
+      const { count: vehiclesCount, error: vehiclesError } = await supabase
+        .from('vehicles')
+        .select('*', { count: 'exact', head: true });
+
+      if (vehiclesError) throw vehiclesError;
+
+      // Calculate stats
+      const totalInspections = inspectionsData?.length || 0;
+      const today = new Date().toDateString();
+      const completedToday = inspectionsData?.filter(inspection => 
+        new Date(inspection.created_at).toDateString() === today
+      ).length || 0;
+
+      const criticalIssues = inspectionsData?.reduce((acc, inspection) => {
+        const issues = inspection.inspection_items?.filter(item => 
+          item.status === 'needs_replacement'
+        ).length || 0;
+        return acc + (issues > 0 ? 1 : 0);
+      }, 0) || 0;
+
+      setInspections(inspectionsData || []);
+      setStats({
+        totalInspections,
+        completedToday,
+        pendingInspections: 0, // We don't have pending status in our current schema
+        activeVehicles: vehiclesCount || 0,
+        criticalIssues,
+        monthlyGrowth: 0 // This would need historical data to calculate
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar dados do dashboard",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNewInspection = () => {
+    if (onNewInspection) {
+      onNewInspection();
+    } else {
+      navigate('/inspection');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -127,7 +224,7 @@ const Dashboard = ({
                 <p className="text-muted-foreground mb-4">
                   Gerencie suas inspeções veiculares de forma eficiente e mantenha seus veículos sempre seguros.
                 </p>
-                <Button onClick={onNewInspection} className="bg-gradient-primary hover:opacity-90">
+                <Button onClick={handleNewInspection} className="bg-gradient-primary hover:opacity-90">
                   <Plus className="h-4 w-4 mr-2" />
                   Nova Inspeção
                 </Button>
@@ -152,10 +249,10 @@ const Dashboard = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-blue-600 text-sm font-medium">Inspeções Hoje</p>
-                  <p className="text-2xl font-bold text-blue-900">{mockStats.completedToday}</p>
+                  <p className="text-2xl font-bold text-blue-900">{loading ? '...' : stats.completedToday}</p>
                   <p className="text-xs text-blue-600 mt-1">
                     <TrendingUp className="h-3 w-3 inline mr-1" />
-                    +{mockStats.monthlyGrowth}% este mês
+                    Dados atuais
                   </p>
                 </div>
                 <div className="bg-blue-500 p-3 rounded-full">
@@ -170,7 +267,7 @@ const Dashboard = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-green-600 text-sm font-medium">Total de Inspeções</p>
-                  <p className="text-2xl font-bold text-green-900">{mockStats.totalInspections}</p>
+                  <p className="text-2xl font-bold text-green-900">{loading ? '...' : stats.totalInspections}</p>
                   <p className="text-xs text-green-600 mt-1">
                     <Activity className="h-3 w-3 inline mr-1" />
                     Histórico completo
@@ -188,7 +285,7 @@ const Dashboard = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-orange-600 text-sm font-medium">Pendentes</p>
-                  <p className="text-2xl font-bold text-orange-900">{mockStats.pendingInspections}</p>
+                  <p className="text-2xl font-bold text-orange-900">{loading ? '...' : stats.pendingInspections}</p>
                   <p className="text-xs text-orange-600 mt-1">
                     <Clock className="h-3 w-3 inline mr-1" />
                     Aguardando
@@ -206,7 +303,7 @@ const Dashboard = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-purple-600 text-sm font-medium">Veículos Ativos</p>
-                  <p className="text-2xl font-bold text-purple-900">{mockStats.activeVehicles}</p>
+                  <p className="text-2xl font-bold text-purple-900">{loading ? '...' : stats.activeVehicles}</p>
                   <p className="text-xs text-purple-600 mt-1">
                     <Car className="h-3 w-3 inline mr-1" />
                     Em operação
@@ -244,49 +341,66 @@ const Dashboard = ({
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {mockInspections.map((inspection) => (
-                    <div key={inspection.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center space-x-4">
-                        <div className="bg-primary/10 p-2 rounded-lg">
-                          {inspection.vehicle.includes("CB") ? 
-                            <Bike className="h-5 w-5 text-primary" /> : 
-                            <Car className="h-5 w-5 text-primary" />
-                          }
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">{inspection.vehicle}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {inspection.plate} • {inspection.driver}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            <Calendar className="h-3 w-3 inline mr-1" />
-                            {new Date(inspection.date).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
-                      </div>
+                {loading ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Carregando inspeções...</p>
+                  </div>
+                ) : inspections.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Nenhuma inspeção encontrada</p>
+                    <Button onClick={handleNewInspection} className="mt-4">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Criar primeira inspeção
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {inspections.map((inspection) => {
+                      const issues = inspection.inspection_items?.filter(item => 
+                        item.status === 'needs_replacement' || item.status === 'observation'
+                      ).length || 0;
                       
-                      <div className="flex items-center space-x-3">
-                        <Badge variant={getIssuesBadgeVariant(inspection.issues)}>
-                          {inspection.issues === 0 ? "OK" : `${inspection.issues} problema${inspection.issues > 1 ? 's' : ''}`}
-                        </Badge>
-                        
-                        <Badge className={getStatusColor(inspection.status)}>
-                          {inspection.status === "completed" ? "Concluída" : "Pendente"}
-                        </Badge>
-                        
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" title="Ver detalhes">
-                            <ArrowRight className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" title="Excluir inspeção">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                      return (
+                        <div key={inspection.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
+                          <div className="flex items-center space-x-4">
+                            <div className="bg-primary/10 p-2 rounded-lg">
+                              {inspection.vehicles.vehicle_type === "moto" ? 
+                                <Bike className="h-5 w-5 text-primary" /> : 
+                                <Car className="h-5 w-5 text-primary" />
+                              }
+                            </div>
+                            <div>
+                              <p className="font-medium text-foreground">{inspection.vehicles.marca_modelo}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {inspection.vehicles.placa} • {inspection.driver_name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                <Calendar className="h-3 w-3 inline mr-1" />
+                                {new Date(inspection.created_at).toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-3">
+                            <Badge variant={getIssuesBadgeVariant(issues)}>
+                              {issues === 0 ? "OK" : `${issues} problema${issues > 1 ? 's' : ''}`}
+                            </Badge>
+                            
+                            <Badge className="text-green-600 bg-green-50 border-green-200">
+                              Concluída
+                            </Badge>
+                            
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="sm" title="Ver detalhes" onClick={() => navigate('/history')}>
+                                <ArrowRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -299,7 +413,7 @@ const Dashboard = ({
                 <CardTitle className="text-lg">Ações Rápidas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button onClick={onNewInspection} className="w-full justify-start bg-gradient-primary hover:opacity-90">
+                <Button onClick={handleNewInspection} className="w-full justify-start bg-gradient-primary hover:opacity-90">
                   <Plus className="h-4 w-4 mr-2" />
                   Nova Inspeção
                 </Button>
@@ -359,7 +473,7 @@ const Dashboard = ({
             </Card>
 
             {/* Critical Issues Alert */}
-            {mockStats.criticalIssues > 0 && (
+            {!loading && stats.criticalIssues > 0 && (
               <Card className="border-red-200 bg-red-50/50">
                 <CardHeader>
                   <CardTitle className="text-lg text-red-700 flex items-center gap-2">
@@ -369,9 +483,9 @@ const Dashboard = ({
                 </CardHeader>
                 <CardContent>
                   <div className="text-sm text-red-600 mb-3">
-                    {mockStats.criticalIssues} veículo{mockStats.criticalIssues > 1 ? 's' : ''} com problemas críticos requer{mockStats.criticalIssues === 1 ? '' : 'em'} atenção imediata.
+                    {stats.criticalIssues} veículo{stats.criticalIssues > 1 ? 's' : ''} com problemas críticos requer{stats.criticalIssues === 1 ? '' : 'em'} atenção imediata.
                   </div>
-                  <Button variant="destructive" size="sm" className="w-full">
+                  <Button variant="destructive" size="sm" className="w-full" onClick={() => navigate('/history')}>
                     Ver Detalhes
                   </Button>
                 </CardContent>
