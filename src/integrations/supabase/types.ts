@@ -44,6 +44,45 @@ export type Database = {
         }
         Relationships: []
       }
+      company_settings: {
+        Row: {
+          company_address: string | null
+          company_email: string | null
+          company_logo_url: string | null
+          company_name: string
+          company_phone: string | null
+          created_at: string
+          id: string
+          primary_color: string | null
+          secondary_color: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_address?: string | null
+          company_email?: string | null
+          company_logo_url?: string | null
+          company_name: string
+          company_phone?: string | null
+          created_at?: string
+          id?: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_address?: string | null
+          company_email?: string | null
+          company_logo_url?: string | null
+          company_name?: string
+          company_phone?: string | null
+          created_at?: string
+          id?: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       damage_marker_photos: {
         Row: {
           created_at: string
@@ -193,6 +232,7 @@ export type Database = {
           inspector_id: string
           latitude: number | null
           longitude: number | null
+          odometer_photo_url: string | null
           signature_data: string | null
           updated_at: string
           vehicle_id: string
@@ -207,6 +247,7 @@ export type Database = {
           inspector_id: string
           latitude?: number | null
           longitude?: number | null
+          odometer_photo_url?: string | null
           signature_data?: string | null
           updated_at?: string
           vehicle_id: string
@@ -221,6 +262,7 @@ export type Database = {
           inspector_id?: string
           latitude?: number | null
           longitude?: number | null
+          odometer_photo_url?: string | null
           signature_data?: string | null
           updated_at?: string
           vehicle_id?: string
@@ -234,6 +276,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      integrations: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -273,6 +345,7 @@ export type Database = {
           id: string
           km_atual: string | null
           marca_modelo: string
+          photo_url: string | null
           placa: string
           renavam: string
           updated_at: string
@@ -285,6 +358,7 @@ export type Database = {
           id?: string
           km_atual?: string | null
           marca_modelo: string
+          photo_url?: string | null
           placa: string
           renavam: string
           updated_at?: string
@@ -297,6 +371,7 @@ export type Database = {
           id?: string
           km_atual?: string | null
           marca_modelo?: string
+          photo_url?: string | null
           placa?: string
           renavam?: string
           updated_at?: string

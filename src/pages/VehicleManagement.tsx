@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Car, Bike } from "lucide-react";
+import { Plus, Edit, Trash2, Car, Bike, Camera, Image } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { VehicleType } from "@/types/inspection";
@@ -21,6 +21,7 @@ interface Vehicle {
   renavam: string;
   km_atual?: string;
   vehicle_type: VehicleType;
+  photo_url?: string;
   created_at: string;
 }
 
@@ -37,7 +38,9 @@ const VehicleManagement = () => {
     renavam: "",
     km_atual: "",
     vehicle_type: "" as VehicleType,
+    photo_url: "",
   });
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchVehicles();
@@ -57,6 +60,41 @@ const VehicleManagement = () => {
       toast.error("Erro ao carregar veículos");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Arquivo muito grande. Máximo 5MB.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('vehicle-photos')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('vehicle-photos')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, photo_url: publicUrl }));
+      toast.success("Foto carregada com sucesso!");
+    } catch (error) {
+      console.error("Erro ao fazer upload:", error);
+      toast.error("Erro ao carregar foto");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -110,6 +148,7 @@ const VehicleManagement = () => {
       renavam: vehicle.renavam,
       km_atual: vehicle.km_atual || "",
       vehicle_type: vehicle.vehicle_type,
+      photo_url: vehicle.photo_url || "",
     });
     setDialogOpen(true);
   };
@@ -141,6 +180,7 @@ const VehicleManagement = () => {
       renavam: "",
       km_atual: "",
       vehicle_type: "" as VehicleType,
+      photo_url: "",
     });
   };
 
@@ -244,6 +284,54 @@ const VehicleManagement = () => {
                 />
               </div>
 
+              <div>
+                <Label>Foto do Veículo</Label>
+                <div className="space-y-2">
+                  {formData.photo_url && (
+                    <div className="relative w-full h-32 bg-muted rounded-lg overflow-hidden">
+                      <img 
+                        src={formData.photo_url} 
+                        alt="Foto do veículo" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <label className="flex-1">
+                      <Button type="button" variant="outline" className="w-full" disabled={uploading} asChild>
+                        <span>
+                          {uploading ? (
+                            <>Carregando...</>
+                          ) : (
+                            <>
+                              <Camera className="h-4 w-4 mr-2" />
+                              {formData.photo_url ? "Alterar Foto" : "Adicionar Foto"}
+                            </>
+                          )}
+                        </span>
+                      </Button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                    </label>
+                    {formData.photo_url && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setFormData(prev => ({ ...prev, photo_url: "" }))}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="flex gap-2 pt-4">
                 <Button type="submit" className="flex-1">
                   {editingVehicle ? "Atualizar" : "Cadastrar"}
@@ -272,6 +360,7 @@ const VehicleManagement = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Foto</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Marca/Modelo</TableHead>
                   <TableHead>Placa</TableHead>
@@ -284,6 +373,19 @@ const VehicleManagement = () => {
               <TableBody>
                 {vehicles.map((vehicle) => (
                   <TableRow key={vehicle.id}>
+                    <TableCell>
+                      <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                        {vehicle.photo_url ? (
+                          <img 
+                            src={vehicle.photo_url} 
+                            alt={`Foto ${vehicle.marca_modelo}`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Image className="h-6 w-6 text-muted-foreground" />
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge variant={vehicle.vehicle_type === 'car' ? 'default' : 'secondary'}>
                         {vehicle.vehicle_type === 'car' ? (

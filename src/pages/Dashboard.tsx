@@ -22,7 +22,8 @@ import {
   LogOut,
   Plus,
   ArrowRight,
-  Activity
+  Activity,
+  Trash2
 } from "lucide-react";
 import { User } from "@/types/inspection";
 
@@ -274,9 +275,14 @@ const Dashboard = ({
                           {inspection.status === "completed" ? "Concluída" : "Pendente"}
                         </Badge>
                         
-                        <Button variant="ghost" size="sm">
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" title="Ver detalhes">
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" title="Excluir inspeção">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -297,17 +303,21 @@ const Dashboard = ({
                   <Plus className="h-4 w-4 mr-2" />
                   Nova Inspeção
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/vehicles'}>
                   <Car className="h-4 w-4 mr-2" />
                   Gerenciar Veículos
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/history'}>
                   <FileText className="h-4 w-4 mr-2" />
                   Relatórios
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/users'}>
                   <Users className="h-4 w-4 mr-2" />
                   Usuários
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/settings'}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Configurações
                 </Button>
               </CardContent>
             </Card>
