@@ -4,8 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ChecklistItem, InspectionStatus } from "@/types/inspection";
-import { Camera, Check, AlertTriangle, MessageSquare, X } from "lucide-react";
+import { Check, AlertTriangle, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
+import CameraCapture from "./CameraCapture";
 
 interface ChecklistItemComponentProps {
   item: ChecklistItem;
@@ -32,10 +33,20 @@ export default function ChecklistItemComponent({ item, onUpdate }: ChecklistItem
     onUpdate(updatedItem);
   };
 
-  const handlePhotoCapture = () => {
-    // TODO: Implement camera functionality
-    console.log('Capture photo for:', item.name);
+  const handlePhotoCapture = (photoUrl: string) => {
+    const updatedItem = {
+      ...item,
+      photos: [...(item.photos || []), photoUrl]
+    };
+    onUpdate(updatedItem);
   };
+
+  // Check if photo is required (lataria e iluminação items)
+  const requiresPhoto = item.name.toLowerCase().includes('farol') || 
+                       item.name.toLowerCase().includes('lanterna') ||
+                       item.name.toLowerCase().includes('luz') ||
+                       item.name.toLowerCase().includes('seta') ||
+                       item.status !== 'ok';
 
   const getStatusButton = (status: InspectionStatus, label: string, icon: React.ReactNode, variant: any) => (
     <Button
@@ -66,14 +77,15 @@ export default function ChecklistItemComponent({ item, onUpdate }: ChecklistItem
             )}
           </div>
           
-          <Button
-            variant="outline"
-            size="icon-sm"
-            className="ml-3 shrink-0"
-            onClick={handlePhotoCapture}
-          >
-            <Camera className="w-4 h-4" />
-          </Button>
+          <div className="ml-3 shrink-0 flex items-center gap-2">
+            <CameraCapture
+              itemName={item.name}
+              onPhotoCapture={handlePhotoCapture}
+            />
+            {requiresPhoto && !item.photos?.length && (
+              <div className="w-2 h-2 bg-warning rounded-full" title="Foto recomendada" />
+            )}
+          </div>
         </div>
 
         {/* Status buttons */}

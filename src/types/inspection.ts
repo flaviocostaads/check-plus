@@ -41,6 +41,12 @@ export interface InspectionData {
   };
 }
 
+export interface User {
+  email: string;
+  name: string;
+  role: 'admin' | 'operator';
+}
+
 export interface DamageMarker {
   id: string;
   x: number;

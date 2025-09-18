@@ -3,18 +3,19 @@ import VehicleSelector from "@/components/VehicleSelector";
 import VehicleForm from "@/components/VehicleForm";
 import DriverForm from "@/components/DriverForm";
 import InspectionView from "@/components/InspectionView";
-import { VehicleType, VehicleData, DriverData, ChecklistItem } from "@/types/inspection";
+import LoginForm from "@/components/LoginForm";
+import { VehicleType, VehicleData, DriverData, InspectionData, User } from "@/types/inspection";
 import appLogo from "@/assets/app-logo.png";
-import heroBackground from "@/assets/hero-bg.jpg";
 
 type Step = 'selector' | 'vehicle' | 'driver' | 'inspection' | 'complete';
 
 const Index = () => {
+  const [user, setUser] = useState<User | null>(null);
   const [currentStep, setCurrentStep] = useState<Step>('selector');
   const [vehicleType, setVehicleType] = useState<VehicleType>('car');
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [driverData, setDriverData] = useState<DriverData | null>(null);
-  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
+  const [inspectionData, setInspectionData] = useState<InspectionData | null>(null);
 
   const handleVehicleSelect = (type: VehicleType) => {
     setVehicleType(type);
@@ -31,8 +32,8 @@ const Index = () => {
     setCurrentStep('inspection');
   };
 
-  const handleInspectionComplete = (items: ChecklistItem[]) => {
-    setChecklistItems(items);
+  const handleInspectionComplete = (inspection: InspectionData) => {
+    setInspectionData(inspection);
     setCurrentStep('complete');
   };
 
@@ -40,8 +41,22 @@ const Index = () => {
     setCurrentStep('selector');
     setVehicleData(null);
     setDriverData(null);
-    setChecklistItems([]);
+    setInspectionData(null);
   };
+
+  const handleLogin = (loggedUser: User) => {
+    setUser(loggedUser);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    resetToStart();
+  };
+
+  // Show login if not authenticated
+  if (!user) {
+    return <LoginForm onLogin={handleLogin} />;
+  }
 
   // Completion screen
   if (currentStep === 'complete') {
@@ -60,18 +75,27 @@ const Index = () => {
           <div className="bg-card p-4 rounded-lg shadow-soft">
             <h3 className="font-semibold mb-2">Resumo:</h3>
             <div className="text-sm space-y-1">
-              <div>Veículo: {vehicleData?.marca_modelo}</div>
-              <div>Placa: {vehicleData?.placa}</div>
-              <div>Condutor: {driverData?.nome_completo}</div>
-              <div>Itens verificados: {checklistItems.length}</div>
+              <div>Veículo: {inspectionData?.vehicleData.marca_modelo}</div>
+              <div>Placa: {inspectionData?.vehicleData.placa}</div>
+              <div>Condutor: {inspectionData?.driverData.nome_completo}</div>
+              <div>Itens verificados: {inspectionData?.checklistItems.length}</div>
+              <div>Avarias: {inspectionData?.damageMarkers?.length || 0}</div>
             </div>
           </div>
-          <button 
-            onClick={resetToStart}
-            className="w-full bg-gradient-primary text-primary-foreground py-3 rounded-lg font-medium hover:scale-105 transition-transform"
-          >
-            Nova Inspeção
-          </button>
+          <div className="space-y-2">
+            <button 
+              onClick={resetToStart}
+              className="w-full bg-gradient-primary text-primary-foreground py-3 rounded-lg font-medium hover:scale-105 transition-transform"
+            >
+              Nova Inspeção
+            </button>
+            <button 
+              onClick={handleLogout}
+              className="w-full bg-muted text-muted-foreground py-2 rounded-lg font-medium hover:bg-muted/80 transition-colors text-sm"
+            >
+              Sair ({user.name})
+            </button>
+          </div>
         </div>
       </div>
     );
