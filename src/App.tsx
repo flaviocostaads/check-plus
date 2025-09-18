@@ -10,7 +10,7 @@ import ChecklistManagement from "./pages/ChecklistManagement";
 import InspectionHistory from "./pages/InspectionHistory";
 import UserManagement from "./pages/UserManagement";
 import Settings from "./pages/Settings";
-import Reports from "./pages/Reports";
+import { Reports } from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
