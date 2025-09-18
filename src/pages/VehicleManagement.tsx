@@ -23,6 +23,7 @@ interface Vehicle {
   km_atual?: string;
   vehicle_type: VehicleType;
   photo_url?: string;
+  avatar_url?: string;
   cidade?: string;
   estado?: string;
   created_at: string;
@@ -42,6 +43,7 @@ const VehicleManagement = () => {
     km_atual: "",
     vehicle_type: "" as VehicleType,
     photo_url: "",
+    avatar_url: "",
     cidade: "",
     estado: "",
   });
@@ -68,7 +70,7 @@ const VehicleManagement = () => {
     }
   };
 
-  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -80,24 +82,24 @@ const VehicleManagement = () => {
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
+      const fileName = `avatar-${Date.now()}-${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('vehicle-photos')
+        .from('vehicle-avatars')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('vehicle-photos')
+        .from('vehicle-avatars')
         .getPublicUrl(filePath);
 
-      setFormData(prev => ({ ...prev, photo_url: publicUrl }));
-      toast.success("Foto carregada com sucesso!");
+      setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
+      toast.success("Avatar carregado com sucesso!");
     } catch (error) {
       console.error("Erro ao fazer upload:", error);
-      toast.error("Erro ao carregar foto");
+      toast.error("Erro ao carregar avatar");
     } finally {
       setUploading(false);
     }
@@ -154,6 +156,7 @@ const VehicleManagement = () => {
       km_atual: vehicle.km_atual || "",
       vehicle_type: vehicle.vehicle_type,
       photo_url: vehicle.photo_url || "",
+      avatar_url: vehicle.avatar_url || "",
       cidade: vehicle.cidade || "",
       estado: vehicle.estado || "",
     });
@@ -188,6 +191,7 @@ const VehicleManagement = () => {
       km_atual: "",
       vehicle_type: "" as VehicleType,
       photo_url: "",
+      avatar_url: "",
       cidade: "",
       estado: "",
     });
@@ -280,8 +284,14 @@ const VehicleManagement = () => {
                   <Input
                     id="ano"
                     value={formData.ano}
-                    onChange={(e) => setFormData({...formData, ano: e.target.value})}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 4) {
+                        setFormData({...formData, ano: value});
+                      }
+                    }}
                     placeholder="Ex: 2020"
+                    maxLength={4}
                   />
                 </div>
 
@@ -290,8 +300,14 @@ const VehicleManagement = () => {
                   <Input
                     id="renavam"
                     value={formData.renavam}
-                    onChange={(e) => setFormData({...formData, renavam: e.target.value})}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 11) {
+                        setFormData({...formData, renavam: value});
+                      }
+                    }}
                     placeholder="Ex: 12345678901"
+                    maxLength={11}
                   />
                 </div>
 
@@ -300,9 +316,60 @@ const VehicleManagement = () => {
                   <Input
                     id="km_atual"
                     value={formData.km_atual}
-                    onChange={(e) => setFormData({...formData, km_atual: e.target.value})}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setFormData({...formData, km_atual: value});
+                    }}
                     placeholder="Ex: 50000"
                   />
+                </div>
+
+                <div>
+                  <Label>Avatar do Veículo</Label>
+                  <div className="space-y-2">
+                    {formData.avatar_url && (
+                      <div className="relative w-20 h-20 bg-muted rounded-lg overflow-hidden">
+                        <img 
+                          src={formData.avatar_url} 
+                          alt="Avatar do veículo" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <label>
+                        <Button type="button" variant="outline" disabled={uploading} asChild>
+                          <span>
+                            {uploading ? (
+                              <>Carregando...</>
+                            ) : (
+                              <>
+                                <Camera className="h-4 w-4 mr-2" />
+                                {formData.avatar_url ? "Alterar Avatar" : "Adicionar Avatar"}
+                              </>
+                            )}
+                          </span>
+                        </Button>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAvatarUpload}
+                          className="hidden"
+                          disabled={uploading}
+                        />
+                      </label>
+                      {formData.avatar_url && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setFormData(prev => ({ ...prev, avatar_url: "" }))}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -354,32 +421,32 @@ const VehicleManagement = () => {
               </div>
             ) : (
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Foto</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Marca/Modelo</TableHead>
-                    <TableHead>Placa</TableHead>
-                    <TableHead>Cor</TableHead>
-                    <TableHead>Ano</TableHead>
-                    <TableHead>KM</TableHead>
-                    <TableHead>Localização</TableHead>
-                    <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Avatar</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Marca/Modelo</TableHead>
+                      <TableHead>Placa</TableHead>
+                      <TableHead>Cor</TableHead>
+                      <TableHead>Ano</TableHead>
+                      <TableHead>KM</TableHead>
+                      <TableHead>Localização</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {vehicles.map((vehicle) => (
                     <TableRow key={vehicle.id}>
                       <TableCell>
                         <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-                          {vehicle.photo_url ? (
+                          {vehicle.avatar_url ? (
                             <img 
-                              src={vehicle.photo_url} 
-                              alt={`Foto ${vehicle.marca_modelo}`}
+                              src={vehicle.avatar_url} 
+                              alt={`Avatar ${vehicle.marca_modelo}`}
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <Image className="h-6 w-6 text-muted-foreground" />
+                            <Car className="h-6 w-6 text-muted-foreground" />
                           )}
                         </div>
                       </TableCell>

@@ -104,17 +104,24 @@ const Settings = () => {
   const handleSaveCompanySettings = async () => {
     setSaving(true);
     try {
-      if (companySettings.id) {
+      const settingsToSave = { ...companySettings };
+      
+      // Remove empty ID to let the database generate one
+      if (!settingsToSave.id || settingsToSave.id === "") {
+        delete (settingsToSave as any).id;
+      }
+
+      if (companySettings.id && companySettings.id !== "") {
         const { error } = await supabase
           .from("company_settings")
-          .update(companySettings)
+          .update(settingsToSave)
           .eq("id", companySettings.id);
 
         if (error) throw error;
       } else {
         const { data, error } = await supabase
           .from("company_settings")
-          .insert([companySettings])
+          .insert([settingsToSave])
           .select()
           .single();
 

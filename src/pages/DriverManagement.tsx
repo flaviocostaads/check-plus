@@ -221,7 +221,30 @@ export default function DriverManagement() {
 
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, '');
-    return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    if (numbers.length <= 11) {
+      return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    }
+    return value;
+  };
+
+  const formatDate = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 8) {
+      return numbers.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
+    }
+    return value;
+  };
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 11) {
+      if (numbers.length <= 10) {
+        return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+      } else {
+        return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+      }
+    }
+    return value;
   };
 
   const filteredDrivers = drivers.filter(driver =>
@@ -249,8 +272,10 @@ export default function DriverManagement() {
             id="cpf"
             value={formData.cpf}
             onChange={(e) => {
-              const formatted = formatCPF(e.target.value);
-              if (formatted.length <= 14) {
+              const value = e.target.value;
+              const numbers = value.replace(/\D/g, '');
+              if (numbers.length <= 11) {
+                const formatted = formatCPF(value);
                 setFormData(prev => ({ ...prev, cpf: formatted }));
               }
             }}
@@ -265,7 +290,15 @@ export default function DriverManagement() {
           <Input
             id="cnh_numero"
             value={formData.cnh_numero}
-            onChange={(e) => setFormData(prev => ({ ...prev, cnh_numero: e.target.value }))}
+            onChange={(e) => {
+              const value = e.target.value;
+              const numbers = value.replace(/\D/g, '');
+              if (numbers.length <= 11) {
+                setFormData(prev => ({ ...prev, cnh_numero: numbers }));
+              }
+            }}
+            placeholder="12345678901"
+            maxLength={11}
             required
           />
         </div>
@@ -275,8 +308,16 @@ export default function DriverManagement() {
           <Input
             id="cnh_validade"
             value={formData.cnh_validade}
-            onChange={(e) => setFormData(prev => ({ ...prev, cnh_validade: e.target.value }))}
+            onChange={(e) => {
+              const value = e.target.value;
+              const numbers = value.replace(/\D/g, '');
+              if (numbers.length <= 8) {
+                const formatted = formatDate(value);
+                setFormData(prev => ({ ...prev, cnh_validade: formatted }));
+              }
+            }}
             placeholder="DD/MM/AAAA"
+            maxLength={10}
             required
           />
         </div>
@@ -286,8 +327,16 @@ export default function DriverManagement() {
           <Input
             id="telefone"
             value={formData.telefone}
-            onChange={(e) => setFormData(prev => ({ ...prev, telefone: e.target.value }))}
+            onChange={(e) => {
+              const value = e.target.value;
+              const numbers = value.replace(/\D/g, '');
+              if (numbers.length <= 11) {
+                const formatted = formatPhone(value);
+                setFormData(prev => ({ ...prev, telefone: formatted }));
+              }
+            }}
             placeholder="(11) 99999-9999"
+            maxLength={15}
           />
         </div>
         
