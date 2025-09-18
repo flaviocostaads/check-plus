@@ -1,17 +1,20 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import VehicleSelector from "@/components/VehicleSelector";
 import VehicleForm from "@/components/VehicleForm";
 import DriverForm from "@/components/DriverForm";
 import InspectionView from "@/components/InspectionView";
 import LoginForm from "@/components/LoginForm";
+import Dashboard from "./Dashboard";
 import { VehicleType, VehicleData, DriverData, InspectionData, User } from "@/types/inspection";
 import appLogo from "@/assets/app-logo.png";
 
-type Step = 'selector' | 'vehicle' | 'driver' | 'inspection' | 'complete';
+type Step = 'dashboard' | 'selector' | 'vehicle' | 'driver' | 'inspection' | 'complete';
 
 const Index = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const [currentStep, setCurrentStep] = useState<Step>('selector');
+  const [currentStep, setCurrentStep] = useState<Step>('dashboard');
   const [vehicleType, setVehicleType] = useState<VehicleType>('car');
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [driverData, setDriverData] = useState<DriverData | null>(null);
@@ -38,7 +41,7 @@ const Index = () => {
   };
 
   const resetToStart = () => {
-    setCurrentStep('selector');
+    setCurrentStep('dashboard');
     setVehicleData(null);
     setDriverData(null);
     setInspectionData(null);
@@ -46,11 +49,17 @@ const Index = () => {
 
   const handleLogin = (loggedUser: User) => {
     setUser(loggedUser);
+    setCurrentStep('dashboard');
   };
 
   const handleLogout = () => {
     setUser(null);
+    setCurrentStep('dashboard');
     resetToStart();
+  };
+
+  const handleNewInspection = () => {
+    setCurrentStep('selector');
   };
 
   // Show login if not authenticated
@@ -90,10 +99,16 @@ const Index = () => {
               Nova Inspeção
             </button>
             <button 
+              onClick={() => setCurrentStep('dashboard')}
+              className="w-full bg-secondary text-secondary-foreground py-2 rounded-lg font-medium hover:bg-secondary/80 transition-colors text-sm"
+            >
+              Voltar ao Dashboard
+            </button>
+            <button 
               onClick={handleLogout}
               className="w-full bg-muted text-muted-foreground py-2 rounded-lg font-medium hover:bg-muted/80 transition-colors text-sm"
             >
-              Sair ({user.name})
+              Sair ({user?.name})
             </button>
           </div>
         </div>
@@ -103,6 +118,14 @@ const Index = () => {
 
   return (
     <>
+      {currentStep === 'dashboard' && user && (
+        <Dashboard 
+          user={user} 
+          onNewInspection={handleNewInspection}
+          onLogout={handleLogout}
+        />
+      )}
+      
       {currentStep === 'selector' && (
         <VehicleSelector onSelectVehicle={handleVehicleSelect} />
       )}

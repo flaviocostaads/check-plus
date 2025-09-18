@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, User, Lock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Shield, User, Lock, Car, CheckCircle, BarChart3, FileText, Smartphone, Zap } from "lucide-react";
 import { toast } from "sonner";
 import appLogo from "@/assets/app-logo.png";
 
@@ -40,8 +40,8 @@ const DEMO_USERS: User[] = [
 export default function LoginForm({ onLogin }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedUser, setSelectedUser] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,11 +70,147 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     }
   };
 
+  if (!showLogin) {
+    return (
+      <div className="min-h-screen bg-gradient-surface">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden bg-gradient-primary">
+          <div className="absolute inset-0 bg-gradient-blue-dark opacity-90"></div>
+          <div className="relative px-6 py-20 text-center">
+            <div className="mx-auto w-24 h-24 bg-white/20 rounded-2xl flex items-center justify-center mb-8 shadow-glow">
+              <img src={appLogo} alt="NSA Checklist" className="w-14 h-14" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              NSA Checklist
+            </h1>
+            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+              Sistema Inteligente de Inspeção Veicular
+            </p>
+            <p className="text-lg text-white/80 mb-12 max-w-3xl mx-auto">
+              Transforme suas inspeções com tecnologia moderna, relatórios automatizados e controle total da sua frota
+            </p>
+            <Button 
+              onClick={() => setShowLogin(true)}
+              size="lg"
+              className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 rounded-xl shadow-elegant"
+            >
+              <Shield className="w-5 h-5 mr-2" />
+              Acessar Sistema
+            </Button>
+          </div>
+        </div>
+
+        {/* Features Section */}
+        <div className="px-6 py-16">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold text-foreground mb-4">
+                Tudo que você precisa para gerenciar sua frota
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                Solução completa para inspeções veiculares com tecnologia mobile, relatórios em PDF e dashboard executivo
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <Card className="text-center shadow-soft hover:shadow-medium transition-all hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Smartphone className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">App Mobile</h3>
+                  <p className="text-muted-foreground">Interface otimizada para uso em campo com câmera integrada</p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center shadow-soft hover:shadow-medium transition-all hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Relatórios PDF</h3>
+                  <p className="text-muted-foreground">Geração automática de relatórios profissionais com fotos</p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center shadow-soft hover:shadow-medium transition-all hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BarChart3 className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Dashboard</h3>
+                  <p className="text-muted-foreground">Controle total com métricas e estatísticas em tempo real</p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center shadow-soft hover:shadow-medium transition-all hover:scale-105">
+                <CardContent className="p-6">
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Zap className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Integração</h3>
+                  <p className="text-muted-foreground">WhatsApp, email e sincronização automática offline</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div className="bg-gradient-card py-16">
+          <div className="max-w-4xl mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+              <div>
+                <div className="text-4xl font-bold text-primary mb-2">99%</div>
+                <div className="text-lg text-muted-foreground">Precisão nas Inspeções</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-primary mb-2">5min</div>
+                <div className="text-lg text-muted-foreground">Tempo Médio por Inspeção</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-primary mb-2">24/7</div>
+                <div className="text-lg text-muted-foreground">Funcionamento Offline</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="bg-gradient-primary py-16">
+          <div className="max-w-4xl mx-auto text-center px-6">
+            <h3 className="text-3xl font-bold text-white mb-4">
+              Pronto para modernizar suas inspeções?
+            </h3>
+            <p className="text-xl text-white/90 mb-8">
+              Versão Beta disponível para testes. Entre agora e experimente!
+            </p>
+            <Button 
+              onClick={() => setShowLogin(true)}
+              size="lg"
+              className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-6 rounded-xl"
+            >
+              <User className="w-5 h-5 mr-2" />
+              Fazer Login
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-surface flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-elegant">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+          <Button 
+            variant="ghost" 
+            onClick={() => setShowLogin(false)}
+            className="absolute top-4 left-4"
+          >
+            ← Voltar
+          </Button>
+          <div className="mx-auto w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center">
             <img src={appLogo} alt="NSA Checklist" className="w-12 h-12" />
           </div>
           <div>
@@ -102,9 +238,9 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                 >
                   <User className="w-4 h-4 mr-2" />
                   {user.name}
-                  <span className="ml-auto text-xs text-muted-foreground">
+                  <Badge variant="secondary" className="ml-auto text-xs">
                     {user.role === 'admin' ? 'Admin' : 'Operador'}
-                  </span>
+                  </Badge>
                 </Button>
               ))}
             </div>

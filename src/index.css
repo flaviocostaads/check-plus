@@ -8,61 +8,69 @@ All colors MUST be HSL. Built for mobile-first field use.
 
 @layer base {
   :root {
-    /* Base colors - Professional automotive theme */
-    --background: 240 10% 98%;
-    --foreground: 240 10% 15%;
+    /* Modern blue dashboard palette */
+    --background: 210 25% 97%;
+    --foreground: 210 20% 12%;
 
     /* Cards and surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 15%;
+    --card-foreground: 210 20% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 15%;
+    --popover-foreground: 210 20% 12%;
 
-    /* Primary - Professional automotive blue */
-    --primary: 215 90% 45%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 215 90% 60%;
+    /* Primary - Modern corporate blue */
+    --primary: 214 88% 52%;
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 219 100% 60%;
 
     /* Secondary - Clean neutral */
-    --secondary: 240 5% 94%;
-    --secondary-foreground: 240 8% 25%;
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 210 20% 20%;
 
     /* Success/OK - Professional green */
-    --success: 145 85% 35%;
-    --success-foreground: 0 0% 100%;
-    --success-soft: 145 35% 95%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+    --success-soft: 142 35% 95%;
 
     /* Warning/Needs attention - Amber */
-    --warning: 35 95% 55%;
-    --warning-foreground: 240 10% 15%;
-    --warning-soft: 35 95% 96%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    --warning-soft: 38 95% 96%;
 
     /* Destructive/Critical - Professional red */
-    --destructive: 0 85% 55%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
     /* Muted elements */
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 5% 45%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 210 15% 45%;
 
     /* Accent colors */
-    --accent: 215 90% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 214 40% 92%;
+    --accent-foreground: 214 88% 40%;
+
+    /* Info blue */
+    --info: 214 88% 52%;
+    --info-foreground: 0 0% 98%;
 
     /* Borders and inputs */
-    --border: 240 6% 88%;
-    --input: 240 6% 92%;
-    --ring: 215 90% 50%;
+    --border: 210 20% 88%;
+    --input: 210 20% 88%;
+    --ring: 214 88% 52%;
 
-    /* Gradients for visual appeal */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-surface: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+    /* Modern blue gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(214, 88%, 52%), hsl(219, 100%, 60%));
+    --gradient-surface: linear-gradient(135deg, hsl(210, 25%, 97%), hsl(214, 40%, 92%));
+    --gradient-card: linear-gradient(135deg, hsl(0, 0%, 100%), hsl(214, 20%, 98%));
+    --gradient-blue-dark: linear-gradient(135deg, hsl(214, 88%, 45%), hsl(219, 80%, 35%));
     
-    /* Shadows */
-    --shadow-soft: 0 2px 8px hsl(240 10% 15% / 0.08);
-    --shadow-medium: 0 4px 16px hsl(240 10% 15% / 0.12);
-    --shadow-strong: 0 8px 32px hsl(240 10% 15% / 0.16);
+    /* Enhanced shadows with blue tint */
+    --shadow-soft: 0 2px 8px hsl(214 30% 20% / 0.08);
+    --shadow-medium: 0 4px 12px hsl(214 30% 20% / 0.12);
+    --shadow-strong: 0 8px 24px hsl(214 30% 20% / 0.16);
+    --shadow-elegant: 0 10px 40px hsl(214 88% 52% / 0.15);
+    --shadow-glow: 0 0 30px hsl(214 88% 70% / 0.3);
 
     /* Animation and transitions */    
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -71,67 +79,69 @@ All colors MUST be HSL. Built for mobile-first field use.
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    /* Dark mode - Professional automotive theme */
-    --background: 240 10% 8%;
-    --foreground: 240 5% 95%;
+    /* Dark mode - Modern blue theme */
+    --background: 214 30% 6%;
+    --foreground: 214 15% 95%;
 
-    --card: 240 8% 12%;
-    --card-foreground: 240 5% 95%;
+    --card: 214 30% 8%;
+    --card-foreground: 214 15% 95%;
 
-    --popover: 240 8% 12%;
-    --popover-foreground: 240 5% 95%;
+    --popover: 214 30% 8%;
+    --popover-foreground: 214 15% 95%;
 
-    --primary: 215 90% 55%;
-    --primary-foreground: 240 10% 8%;
-    --primary-glow: 215 90% 65%;
+    --primary: 214 88% 52%;
+    --primary-foreground: 214 30% 6%;
+    --primary-glow: 219 100% 65%;
 
-    --secondary: 240 8% 18%;
-    --secondary-foreground: 240 5% 85%;
+    --secondary: 214 20% 12%;
+    --secondary-foreground: 214 15% 75%;
 
-    --success: 145 85% 40%;
-    --success-foreground: 240 10% 8%;
-    --success-soft: 145 85% 8%;
+    --success: 142 76% 40%;
+    --success-foreground: 214 30% 6%;
+    --success-soft: 142 85% 8%;
 
-    --warning: 35 95% 60%;
-    --warning-foreground: 240 10% 8%;
-    --warning-soft: 35 95% 8%;
+    --warning: 38 92% 60%;
+    --warning-foreground: 214 30% 6%;
+    --warning-soft: 38 95% 8%;
 
-    --destructive: 0 85% 60%;
-    --destructive-foreground: 240 10% 8%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 214 30% 6%;
 
-    --muted: 240 8% 15%;
-    --muted-foreground: 240 5% 60%;
+    --muted: 214 20% 12%;
+    --muted-foreground: 214 10% 54%;
 
-    --accent: 215 90% 55%;
-    --accent-foreground: 240 10% 8%;
+    --accent: 214 20% 16%;
+    --accent-foreground: 214 88% 52%;
 
-    --border: 240 8% 20%;
-    --input: 240 8% 16%;
-    --ring: 215 90% 55%;
+    --info: 214 88% 52%;
+    --info-foreground: 214 30% 6%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-surface: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+    --border: 214 20% 16%;
+    --input: 214 20% 16%;
+    --ring: 214 88% 52%;
+
+    /* Dark mode blue gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(214, 88%, 52%), hsl(219, 100%, 45%));
+    --gradient-surface: linear-gradient(135deg, hsl(214, 30%, 6%), hsl(214, 30%, 10%));
+    --gradient-card: linear-gradient(135deg, hsl(214, 30%, 8%), hsl(214, 25%, 12%));
+    --gradient-blue-dark: linear-gradient(135deg, hsl(214, 88%, 35%), hsl(219, 80%, 25%));
     
     --shadow-soft: 0 2px 8px hsl(0 0% 0% / 0.2);
     --shadow-medium: 0 4px 16px hsl(0 0% 0% / 0.3);
     --shadow-strong: 0 8px 32px hsl(0 0% 0% / 0.4);
+    --shadow-elegant: 0 10px 40px hsl(214 88% 52% / 0.25);
+    --shadow-glow: 0 0 30px hsl(214 88% 70% / 0.4);
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
