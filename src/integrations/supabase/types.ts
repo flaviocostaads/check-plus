@@ -147,6 +147,51 @@ export type Database = {
           },
         ]
       }
+      drivers: {
+        Row: {
+          avatar_url: string | null
+          cnh_numero: string
+          cnh_validade: string
+          cpf: string
+          created_at: string
+          email: string | null
+          endereco: string | null
+          id: string
+          is_active: boolean
+          nome_completo: string
+          telefone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          cnh_numero: string
+          cnh_validade: string
+          cpf: string
+          created_at?: string
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          is_active?: boolean
+          nome_completo: string
+          telefone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          cnh_numero?: string
+          cnh_validade?: string
+          cpf?: string
+          created_at?: string
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          is_active?: boolean
+          nome_completo?: string
+          telefone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inspection_items: {
         Row: {
           checklist_template_id: string
@@ -227,6 +272,7 @@ export type Database = {
           driver_cnh: string
           driver_cnh_validade: string
           driver_cpf: string
+          driver_id: string | null
           driver_name: string
           id: string
           inspector_id: string
@@ -242,6 +288,7 @@ export type Database = {
           driver_cnh: string
           driver_cnh_validade: string
           driver_cpf: string
+          driver_id?: string | null
           driver_name: string
           id?: string
           inspector_id: string
@@ -257,6 +304,7 @@ export type Database = {
           driver_cnh?: string
           driver_cnh_validade?: string
           driver_cpf?: string
+          driver_id?: string | null
           driver_name?: string
           id?: string
           inspector_id?: string
@@ -268,6 +316,13 @@ export type Database = {
           vehicle_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "inspections_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "inspections_vehicle_id_fkey"
             columns: ["vehicle_id"]

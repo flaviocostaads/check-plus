@@ -11,6 +11,7 @@ import InspectionHistory from "./pages/InspectionHistory";
 import UserManagement from "./pages/UserManagement";
 import Settings from "./pages/Settings";
 import { Reports } from "./pages/Reports";
+import DriverManagement from "./pages/DriverManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/checklist" element={<ChecklistManagement />} />
           <Route path="/history" element={<InspectionHistory />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/drivers" element={<DriverManagement />} />
           <Route path="/users" element={<UserManagement />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />

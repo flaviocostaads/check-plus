@@ -311,6 +311,10 @@ const Dashboard = ({
                   <FileText className="h-4 w-4 mr-2" />
                   Relatórios
                 </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/drivers'}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Motoristas
+                </Button>
                 <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/users'}>
                   <Users className="h-4 w-4 mr-2" />
                   Usuários

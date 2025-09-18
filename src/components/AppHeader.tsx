@@ -46,6 +46,7 @@ export const AppHeader = ({
   const navigationItems = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Veículos", href: "/vehicles", icon: Car },
+    { name: "Motoristas", href: "/drivers", icon: Users },
     { name: "Checklist", href: "/checklist", icon: CheckSquare },
     { name: "Histórico", href: "/history", icon: FileText },
     { name: "Relatórios", href: "/reports", icon: FileText },
