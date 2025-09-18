@@ -340,8 +340,10 @@ export type Database = {
       vehicles: {
         Row: {
           ano: string
+          cidade: string | null
           cor: string
           created_at: string
+          estado: string | null
           id: string
           km_atual: string | null
           marca_modelo: string
@@ -353,8 +355,10 @@ export type Database = {
         }
         Insert: {
           ano: string
+          cidade?: string | null
           cor: string
           created_at?: string
+          estado?: string | null
           id?: string
           km_atual?: string | null
           marca_modelo: string
@@ -366,8 +370,10 @@ export type Database = {
         }
         Update: {
           ano?: string
+          cidade?: string | null
           cor?: string
           created_at?: string
+          estado?: string | null
           id?: string
           km_atual?: string | null
           marca_modelo?: string

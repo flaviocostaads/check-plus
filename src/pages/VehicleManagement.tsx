@@ -7,10 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Car, Bike, Camera, Image } from "lucide-react";
+import { Plus, Edit, Trash2, Car, Bike, Camera, Image, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { VehicleType } from "@/types/inspection";
+import { Link } from "react-router-dom";
 
 interface Vehicle {
   id: string;
@@ -22,6 +23,8 @@ interface Vehicle {
   km_atual?: string;
   vehicle_type: VehicleType;
   photo_url?: string;
+  cidade?: string;
+  estado?: string;
   created_at: string;
 }
 
@@ -39,6 +42,8 @@ const VehicleManagement = () => {
     km_atual: "",
     vehicle_type: "" as VehicleType,
     photo_url: "",
+    cidade: "",
+    estado: "",
   });
   const [uploading, setUploading] = useState(false);
 
@@ -149,6 +154,8 @@ const VehicleManagement = () => {
       km_atual: vehicle.km_atual || "",
       vehicle_type: vehicle.vehicle_type,
       photo_url: vehicle.photo_url || "",
+      cidade: vehicle.cidade || "",
+      estado: vehicle.estado || "",
     });
     setDialogOpen(true);
   };
@@ -181,6 +188,8 @@ const VehicleManagement = () => {
       km_atual: "",
       vehicle_type: "" as VehicleType,
       photo_url: "",
+      cidade: "",
+      estado: "",
     });
   };
 
@@ -191,240 +200,235 @@ const VehicleManagement = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-primary">Gerenciamento de Veículos</h1>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Cadastrar Veículo
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>
-                {editingVehicle ? "Editar Veículo" : "Cadastrar Novo Veículo"}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="vehicle_type">Tipo de Veículo *</Label>
-                <Select 
-                  value={formData.vehicle_type} 
-                  onValueChange={(value: VehicleType) => setFormData({...formData, vehicle_type: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="car">Carro</SelectItem>
-                    <SelectItem value="moto">Moto</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="marca_modelo">Marca/Modelo *</Label>
-                <Input
-                  id="marca_modelo"
-                  value={formData.marca_modelo}
-                  onChange={(e) => setFormData({...formData, marca_modelo: e.target.value})}
-                  placeholder="Ex: Honda Civic"
-                />
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Link to="/dashboard">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Voltar ao Dashboard
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Gerenciamento de Veículos</h1>
+              <p className="text-muted-foreground">Gerencie a frota de veículos</p>
+            </div>
+          </div>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Cadastrar Veículo
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingVehicle ? "Editar Veículo" : "Cadastrar Novo Veículo"}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="vehicle_type">Tipo de Veículo *</Label>
+                  <Select 
+                    value={formData.vehicle_type} 
+                    onValueChange={(value: VehicleType) => setFormData({...formData, vehicle_type: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="car">Carro</SelectItem>
+                      <SelectItem value="moto">Moto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="marca_modelo">Marca/Modelo *</Label>
+                  <Input
+                    id="marca_modelo"
+                    value={formData.marca_modelo}
+                    onChange={(e) => setFormData({...formData, marca_modelo: e.target.value})}
+                    placeholder="Ex: Honda Civic"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="placa">Placa *</Label>
-                <Input
-                  id="placa"
-                  value={formData.placa}
-                  onChange={(e) => setFormData({...formData, placa: e.target.value.toUpperCase()})}
-                  placeholder="Ex: ABC1234"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="placa">Placa *</Label>
+                  <Input
+                    id="placa"
+                    value={formData.placa}
+                    onChange={(e) => setFormData({...formData, placa: e.target.value.toUpperCase()})}
+                    placeholder="Ex: ABC1234"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="cor">Cor *</Label>
-                <Input
-                  id="cor"
-                  value={formData.cor}
-                  onChange={(e) => setFormData({...formData, cor: e.target.value})}
-                  placeholder="Ex: Branco"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="cor">Cor *</Label>
+                  <Input
+                    id="cor"
+                    value={formData.cor}
+                    onChange={(e) => setFormData({...formData, cor: e.target.value})}
+                    placeholder="Ex: Branco"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="ano">Ano *</Label>
-                <Input
-                  id="ano"
-                  value={formData.ano}
-                  onChange={(e) => setFormData({...formData, ano: e.target.value})}
-                  placeholder="Ex: 2020"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="ano">Ano *</Label>
+                  <Input
+                    id="ano"
+                    value={formData.ano}
+                    onChange={(e) => setFormData({...formData, ano: e.target.value})}
+                    placeholder="Ex: 2020"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="renavam">RENAVAM *</Label>
-                <Input
-                  id="renavam"
-                  value={formData.renavam}
-                  onChange={(e) => setFormData({...formData, renavam: e.target.value})}
-                  placeholder="Ex: 12345678901"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="renavam">RENAVAM *</Label>
+                  <Input
+                    id="renavam"
+                    value={formData.renavam}
+                    onChange={(e) => setFormData({...formData, renavam: e.target.value})}
+                    placeholder="Ex: 12345678901"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="km_atual">KM Atual</Label>
-                <Input
-                  id="km_atual"
-                  value={formData.km_atual}
-                  onChange={(e) => setFormData({...formData, km_atual: e.target.value})}
-                  placeholder="Ex: 50000"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="km_atual">KM Atual</Label>
+                  <Input
+                    id="km_atual"
+                    value={formData.km_atual}
+                    onChange={(e) => setFormData({...formData, km_atual: e.target.value})}
+                    placeholder="Ex: 50000"
+                  />
+                </div>
 
-              <div>
-                <Label>Foto do Veículo</Label>
-                <div className="space-y-2">
-                  {formData.photo_url && (
-                    <div className="relative w-full h-32 bg-muted rounded-lg overflow-hidden">
-                      <img 
-                        src={formData.photo_url} 
-                        alt="Foto do veículo" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <label className="flex-1">
-                      <Button type="button" variant="outline" className="w-full" disabled={uploading} asChild>
-                        <span>
-                          {uploading ? (
-                            <>Carregando...</>
-                          ) : (
-                            <>
-                              <Camera className="h-4 w-4 mr-2" />
-                              {formData.photo_url ? "Alterar Foto" : "Adicionar Foto"}
-                            </>
-                          )}
-                        </span>
-                      </Button>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoUpload}
-                        className="hidden"
-                        disabled={uploading}
-                      />
-                    </label>
-                    {formData.photo_url && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setFormData(prev => ({ ...prev, photo_url: "" }))}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="cidade">Cidade *</Label>
+                    <Input
+                      id="cidade"
+                      value={formData.cidade}
+                      onChange={(e) => setFormData({...formData, cidade: e.target.value})}
+                      placeholder="Ex: São Paulo"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="estado">Estado *</Label>
+                    <Input
+                      id="estado"
+                      value={formData.estado}
+                      onChange={(e) => setFormData({...formData, estado: e.target.value})}
+                      placeholder="Ex: SP"
+                      required
+                    />
                   </div>
                 </div>
-              </div>
 
-              <div className="flex gap-2 pt-4">
-                <Button type="submit" className="flex-1">
-                  {editingVehicle ? "Atualizar" : "Cadastrar"}
-                </Button>
-                <Button type="button" variant="outline" onClick={handleDialogClose}>
-                  Cancelar
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+                <div className="flex gap-2 pt-4">
+                  <Button type="submit" className="flex-1">
+                    {editingVehicle ? "Atualizar" : "Cadastrar"}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={handleDialogClose}>
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Veículos Cadastrados</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-4">Carregando...</div>
-          ) : vehicles.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhum veículo cadastrado
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Foto</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Marca/Modelo</TableHead>
-                  <TableHead>Placa</TableHead>
-                  <TableHead>Cor</TableHead>
-                  <TableHead>Ano</TableHead>
-                  <TableHead>KM</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {vehicles.map((vehicle) => (
-                  <TableRow key={vehicle.id}>
-                    <TableCell>
-                      <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-                        {vehicle.photo_url ? (
-                          <img 
-                            src={vehicle.photo_url} 
-                            alt={`Foto ${vehicle.marca_modelo}`}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <Image className="h-6 w-6 text-muted-foreground" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={vehicle.vehicle_type === 'car' ? 'default' : 'secondary'}>
-                        {vehicle.vehicle_type === 'car' ? (
-                          <><Car className="h-3 w-3 mr-1" /> Carro</>
-                        ) : (
-                          <><Bike className="h-3 w-3 mr-1" /> Moto</>
-                        )}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-medium">{vehicle.marca_modelo}</TableCell>
-                    <TableCell>{vehicle.placa}</TableCell>
-                    <TableCell>{vehicle.cor}</TableCell>
-                    <TableCell>{vehicle.ano}</TableCell>
-                    <TableCell>{vehicle.km_atual || "-"}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(vehicle)}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDelete(vehicle.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </TableCell>
+        <Card>
+          <CardHeader>
+            <CardTitle>Veículos Cadastrados</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-4">Carregando...</div>
+            ) : vehicles.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Nenhum veículo cadastrado
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Foto</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Marca/Modelo</TableHead>
+                    <TableHead>Placa</TableHead>
+                    <TableHead>Cor</TableHead>
+                    <TableHead>Ano</TableHead>
+                    <TableHead>KM</TableHead>
+                    <TableHead>Localização</TableHead>
+                    <TableHead>Ações</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {vehicles.map((vehicle) => (
+                    <TableRow key={vehicle.id}>
+                      <TableCell>
+                        <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                          {vehicle.photo_url ? (
+                            <img 
+                              src={vehicle.photo_url} 
+                              alt={`Foto ${vehicle.marca_modelo}`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Image className="h-6 w-6 text-muted-foreground" />
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={vehicle.vehicle_type === 'car' ? 'default' : 'secondary'}>
+                          {vehicle.vehicle_type === 'car' ? (
+                            <><Car className="h-3 w-3 mr-1" /> Carro</>
+                          ) : (
+                            <><Bike className="h-3 w-3 mr-1" /> Moto</>
+                          )}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-medium">{vehicle.marca_modelo}</TableCell>
+                      <TableCell>{vehicle.placa}</TableCell>
+                      <TableCell>{vehicle.cor}</TableCell>
+                      <TableCell>{vehicle.ano}</TableCell>
+                      <TableCell>{vehicle.km_atual || "-"}</TableCell>
+                      <TableCell>
+                        {vehicle.cidade && vehicle.estado 
+                          ? `${vehicle.cidade}/${vehicle.estado}` 
+                          : "-"
+                        }
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEdit(vehicle)}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDelete(vehicle.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

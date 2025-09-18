@@ -48,6 +48,7 @@ export const AppHeader = ({
     { name: "Veículos", href: "/vehicles", icon: Car },
     { name: "Checklist", href: "/checklist", icon: CheckSquare },
     { name: "Histórico", href: "/history", icon: FileText },
+    { name: "Relatórios", href: "/reports", icon: FileText },
     { name: "Usuários", href: "/users", icon: Users },
     { name: "Configurações", href: "/settings", icon: Settings },
   ];
@@ -103,6 +104,10 @@ export const AppHeader = ({
             <div className="flex items-center space-x-2">
               <Button variant="ghost" size="sm">
                 <Bell className="h-5 w-5 text-muted-foreground" />
+              </Button>
+              
+              <Button variant="ghost" size="sm" onClick={() => window.location.href = '/settings'}>
+                <Settings className="h-5 w-5 text-muted-foreground" />
               </Button>
               
               {/* Navigation Menu */}
