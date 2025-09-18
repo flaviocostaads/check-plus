@@ -26,10 +26,12 @@ import { User } from "@/types/inspection";
 import appLogo from "@/assets/app-logo.png";
 
 interface DashboardProps {
-  user: User;
-  onNewInspection: () => void;
-  onLogout: () => void;
+  user?: User;
+  onNewInspection?: () => void;
+  onLogout?: () => void;
 }
+
+const Dashboard = ({ user, onNewInspection, onLogout }: DashboardProps) => {
 
 // Mock data for demonstration
 const mockInspections = [
