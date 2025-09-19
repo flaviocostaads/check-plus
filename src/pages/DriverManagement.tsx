@@ -275,7 +275,7 @@ export default function DriverManagement() {
               const value = e.target.value;
               const numbers = value.replace(/\D/g, '');
               if (numbers.length <= 11) {
-                const formatted = formatCPF(value);
+                const formatted = formatCPF(numbers);
                 setFormData(prev => ({ ...prev, cpf: formatted }));
               }
             }}
@@ -312,7 +312,7 @@ export default function DriverManagement() {
               const value = e.target.value;
               const numbers = value.replace(/\D/g, '');
               if (numbers.length <= 8) {
-                const formatted = formatDate(value);
+                const formatted = formatDate(numbers);
                 setFormData(prev => ({ ...prev, cnh_validade: formatted }));
               }
             }}
@@ -331,7 +331,7 @@ export default function DriverManagement() {
               const value = e.target.value;
               const numbers = value.replace(/\D/g, '');
               if (numbers.length <= 11) {
-                const formatted = formatPhone(value);
+                const formatted = formatPhone(numbers);
                 setFormData(prev => ({ ...prev, telefone: formatted }));
               }
             }}

@@ -153,7 +153,7 @@ const Dashboard = ({
     if (onNewInspection) {
       onNewInspection();
     } else {
-      navigate('/inspection');
+      navigate('/new-inspection');
     }
   };
 

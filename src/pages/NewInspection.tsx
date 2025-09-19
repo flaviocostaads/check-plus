@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Car, User, CheckCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import VehicleListSelector from "@/components/VehicleListSelector";
 import DriverSelector from "@/components/DriverSelector";
 
@@ -26,6 +26,7 @@ interface Driver {
 }
 
 export default function NewInspection() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
@@ -45,9 +46,13 @@ export default function NewInspection() {
   };
 
   const handleStartInspection = () => {
-    // Here you would navigate to the actual inspection interface
-    // For now, just show a success message
-    alert("Inspeção iniciada! Esta funcionalidade será implementada em breve.");
+    // Navigate to inspection interface with selected data
+    navigate("/inspection", {
+      state: {
+        selectedVehicle: selectedVehicle,
+        selectedDriver: selectedDriver
+      }
+    });
   };
 
   return (
