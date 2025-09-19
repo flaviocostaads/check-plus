@@ -24,22 +24,40 @@ export const OdometerCapture = ({ onOdometerCapture, initialKm = "" }: OdometerC
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'environment',
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        } 
-      });
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported on this device');
+      }
+
+      // Request camera permissions with fallback options
+      const constraints = {
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1920, min: 640 },
+          height: { ideal: 1080, min: 480 }
+        }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         setIsStreaming(true);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao acessar câmera:", error);
-      toast.error("Erro ao acessar a câmera");
+      let errorMessage = "Erro ao acessar a câmera";
+      
+      if (error.name === 'NotAllowedError') {
+        errorMessage = "Permissão da câmera negada. Verifique as configurações do navegador.";
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = "Câmera não encontrada neste dispositivo.";
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = "Câmera está sendo usada por outro aplicativo.";
+      }
+      
+      toast.error(errorMessage);
     }
   };
 
@@ -83,10 +101,10 @@ export const OdometerCapture = ({ onOdometerCapture, initialKm = "" }: OdometerC
           
           const fileName = `odometer-${Date.now()}-${Math.random()}.jpg`;
           const filePath = `${fileName}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from('odometer-photos')
-            .upload(filePath, file);
+      
+      const { error: uploadError } = await supabase.storage
+        .from('odometer-photos')
+        .upload(filePath, file);
 
           if (uploadError) throw uploadError;
 
@@ -128,7 +146,13 @@ export const OdometerCapture = ({ onOdometerCapture, initialKm = "" }: OdometerC
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (open) {
+        setIsOpen(true);
+      } else {
+        handleClose();
+      }
+    }}>
       <DialogTrigger asChild>
         <Button variant="outline" onClick={() => setIsOpen(true)}>
           <Camera className="h-4 w-4 mr-2" />

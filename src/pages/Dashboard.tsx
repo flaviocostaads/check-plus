@@ -23,7 +23,8 @@ import {
   Plus,
   ArrowRight,
   Activity,
-  Trash2
+  Trash2,
+  ClipboardList
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -435,6 +436,10 @@ const Dashboard = ({
                 <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/users'}>
                   <Users className="h-4 w-4 mr-2" />
                   Usuários
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/checklist'}>
+                  <ClipboardList className="h-4 w-4 mr-2" />
+                  Gerenciador de Checklists
                 </Button>
                 <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/settings'}>
                   <Settings className="h-4 w-4 mr-2" />

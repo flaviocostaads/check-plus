@@ -18,17 +18,38 @@ export default function CameraCapture({ onPhotoCapture, itemName }: CameraCaptur
 
   const startCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' },
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported on this device');
+      }
+
+      const constraints = {
+        video: { 
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 }
+        },
         audio: false 
-      });
+      };
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
-    } catch (error) {
-      toast.error("Erro ao acessar câmera");
+    } catch (error: any) {
       console.error("Camera access error:", error);
+      let errorMessage = "Erro ao acessar câmera";
+      
+      if (error.name === 'NotAllowedError') {
+        errorMessage = "Permissão da câmera negada. Verifique as configurações do navegador.";
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = "Câmera não encontrada neste dispositivo.";
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = "Câmera está sendo usada por outro aplicativo.";
+      }
+      
+      toast.error(errorMessage);
     }
   };
 
@@ -78,13 +99,19 @@ export default function CameraCapture({ onPhotoCapture, itemName }: CameraCaptur
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (open) {
+        setIsOpen(true);
+        startCamera();
+      } else {
+        handleClose();
+      }
+    }}>
       <DialogTrigger asChild>
         <Button
           variant="outline"
           size="icon-sm"
           className="shrink-0"
-          onClick={startCamera}
         >
           <Camera className="w-4 h-4" />
         </Button>
