@@ -1,19 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import VehicleSelector from "@/components/VehicleSelector";
 import VehicleForm from "@/components/VehicleForm";
 import DriverForm from "@/components/DriverForm";
 import InspectionView from "@/components/InspectionView";
-import LoginForm from "@/components/LoginForm";
+import AuthForm from "@/components/AuthForm";
 import Dashboard from "./Dashboard";
-import { VehicleType, VehicleData, DriverData, InspectionData, User } from "@/types/inspection";
+import { VehicleType, VehicleData, DriverData, InspectionData } from "@/types/inspection";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import appLogo from "@/assets/app-logo.png";
 
 type Step = 'dashboard' | 'selector' | 'vehicle' | 'driver' | 'inspection' | 'complete';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState<Step>('dashboard');
   const [vehicleType, setVehicleType] = useState<VehicleType>('car');
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
@@ -47,13 +51,57 @@ const Index = () => {
     setInspectionData(null);
   };
 
-  const handleLogin = (loggedUser: User) => {
-    setUser(loggedUser);
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Fetch user profile when user logs in
+        if (session?.user) {
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setUserProfile(null);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user profile:', error);
+        return;
+      }
+
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const handleAuthSuccess = (authUser: SupabaseUser, authSession: Session) => {
+    setUser(authUser);
+    setSession(authSession);
     setCurrentStep('dashboard');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
+    setSession(null);
+    setUserProfile(null);
     setCurrentStep('dashboard');
     resetToStart();
   };
@@ -63,8 +111,8 @@ const Index = () => {
   };
 
   // Show login if not authenticated
-  if (!user) {
-    return <LoginForm onLogin={handleLogin} />;
+  if (!user || !session) {
+    return <AuthForm onAuthSuccess={handleAuthSuccess} />;
   }
 
   // Completion screen
@@ -108,7 +156,7 @@ const Index = () => {
               onClick={handleLogout}
               className="w-full bg-muted text-muted-foreground py-2 rounded-lg font-medium hover:bg-muted/80 transition-colors text-sm"
             >
-              Sair ({user?.name})
+              Sair ({userProfile?.name || user?.email})
             </button>
           </div>
         </div>
@@ -120,7 +168,7 @@ const Index = () => {
     <>
       {currentStep === 'dashboard' && user && (
         <Dashboard 
-          user={user} 
+          user={userProfile || { email: user.email, name: user.email, role: 'operator' }} 
           onNewInspection={handleNewInspection}
           onLogout={handleLogout}
         />

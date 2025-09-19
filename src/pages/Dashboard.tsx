@@ -25,13 +25,16 @@ import {
   Activity,
   Trash2
 } from "lucide-react";
-import { User } from "@/types/inspection";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 interface DashboardProps {
-  user?: User;
+  user?: {
+    email: string;
+    name: string;
+    role: 'admin' | 'operator';
+  };
   onNewInspection?: () => void;  
   onLogout?: () => void;
 }

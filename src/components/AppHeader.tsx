@@ -5,10 +5,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BarChart3, Bell, Settings, LogOut, User, Menu, Car, FileText, Users, CheckSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { User as UserType } from "@/types/inspection";
+
+interface UserProfile {
+  email: string;
+  name: string;
+  role: 'admin' | 'operator';
+}
 
 interface AppHeaderProps {
-  user?: UserType;
+  user?: UserProfile;
   onLogout?: () => void;
   showVehiclePhoto?: boolean;
   vehiclePhotoUrl?: string;
