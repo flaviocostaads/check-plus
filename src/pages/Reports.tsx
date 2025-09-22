@@ -97,7 +97,7 @@ export const Reports = () => {
       if (filters.endDate) {
         query = query.lte("created_at", filters.endDate + "T23:59:59");
       }
-      if (filters.vehicleId) {
+      if (filters.vehicleId && filters.vehicleId !== "all") {
         query = query.eq("vehicle_id", filters.vehicleId);
       }
       if (filters.driverName) {
@@ -241,7 +241,7 @@ export const Reports = () => {
                     <SelectValue placeholder="Selecione um veículo" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos os veículos</SelectItem>
+                    <SelectItem value="all">Todos os veículos</SelectItem>
                     {vehicles.map((vehicle) => (
                       <SelectItem key={vehicle.id} value={vehicle.id}>
                         {vehicle.marca_modelo} - {vehicle.placa}
