@@ -360,6 +360,13 @@ export type Database = {
             foreignKeyName: "inspections_driver_id_fkey"
             columns: ["driver_id"]
             isOneToOne: false
+            referencedRelation: "drivers_operator_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
             referencedRelation: "drivers_secure_view"
             referencedColumns: ["id"]
           },
@@ -482,6 +489,45 @@ export type Database = {
       }
     }
     Views: {
+      drivers_operator_view: {
+        Row: {
+          avatar_url: string | null
+          cnh_numero_masked: string | null
+          cnh_validade: string | null
+          cpf_masked: string | null
+          created_at: string | null
+          id: string | null
+          is_active: boolean | null
+          nome_completo: string | null
+          telefone_masked: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          cnh_numero_masked?: never
+          cnh_validade?: string | null
+          cpf_masked?: never
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          nome_completo?: string | null
+          telefone_masked?: never
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          cnh_numero_masked?: never
+          cnh_validade?: string | null
+          cpf_masked?: never
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          nome_completo?: string | null
+          telefone_masked?: never
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       drivers_secure_view: {
         Row: {
           avatar_url: string | null

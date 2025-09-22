@@ -49,20 +49,32 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
   const fetchDrivers = async () => {
     setLoading(true);
     try {
-      // Use secure view that respects RLS policies
+      // Try to access the operator view (which provides masked data for operators)
       const { data, error } = await supabase
-        .from('drivers_secure_view')
+        .from('drivers_operator_view')
         .select('*')
-        .eq('is_active', true)
         .order('nome_completo');
 
       if (error) {
         console.error('Database error:', error);
-        toast.error('Acesso negado ou erro ao carregar motoristas');
+        toast.error('Acesso negado: entre em contato com um administrador');
         return;
       }
       
-      setDrivers(data || []);
+      // Map the masked data to match the Driver interface
+      const mappedDrivers = (data || []).map(driver => ({
+        id: driver.id,
+        nome_completo: driver.nome_completo,
+        cpf: driver.cpf_masked,
+        cnh_numero: driver.cnh_numero_masked,
+        cnh_validade: driver.cnh_validade,
+        telefone: driver.telefone_masked,
+        email: '', // Not available in operator view
+        avatar_url: driver.avatar_url,
+        is_active: driver.is_active
+      }));
+      
+      setDrivers(mappedDrivers);
     } catch (error) {
       console.error('Error fetching drivers:', error);
       toast.error('Erro ao carregar motoristas');

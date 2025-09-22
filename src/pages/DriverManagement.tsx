@@ -73,15 +73,48 @@ export default function DriverManagement() {
   const fetchDrivers = async () => {
     setLoading(true);
     try {
-      // Use secure view that respects role-based access control
-      const { data, error } = await supabase
-        .from('drivers_secure_view')
+      // First try to access drivers table directly (admin access)
+      let { data, error } = await supabase
+        .from('drivers')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
+      let isOperatorView = false;
+
+      // If access denied, try the operator view (masked data)
+      if (error?.code === 'PGRST301') {
+        const { data: operatorData, error: operatorError } = await supabase
+          .from('drivers_operator_view')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (operatorError) {
+          console.error('Database error:', operatorError);
+          toast.error('Acesso negado: você não tem permissão para acessar dados de motoristas');
+          return;
+        }
+        
+        // Map the masked data to match the Driver interface
+        data = (operatorData || []).map(driver => ({
+          id: driver.id,
+          nome_completo: driver.nome_completo,
+          cpf: driver.cpf_masked,
+          cnh_numero: driver.cnh_numero_masked,
+          cnh_validade: driver.cnh_validade,
+          telefone: driver.telefone_masked,
+          email: '', // Not available in operator view
+          endereco: '', // Not available in operator view
+          avatar_url: driver.avatar_url,
+          created_at: driver.created_at,
+          updated_at: driver.updated_at,
+          is_active: driver.is_active
+        }));
+        
+        isOperatorView = true;
+        toast.info('Visualização com dados mascarados para operadores');
+      } else if (error) {
         console.error('Database error:', error);
-        toast.error('Acesso negado: apenas administradores podem gerenciar motoristas');
+        toast.error('Erro ao carregar motoristas');
         return;
       }
       
