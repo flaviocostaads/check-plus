@@ -409,6 +409,27 @@ export type Database = {
         }
         Relationships: []
       }
+      password_history: {
+        Row: {
+          created_at: string | null
+          id: string
+          password_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          password_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          password_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -435,6 +456,33 @@ export type Database = {
           name?: string
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          last_activity: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          last_activity?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          last_activity?: string | null
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []
@@ -579,6 +627,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      log_data_access: {
+        Args: { operation: string; record_id: string; table_name: string }
+        Returns: undefined
+      }
       log_driver_access: {
         Args: { driver_id: string }
         Returns: undefined
@@ -586,6 +638,14 @@ export type Database = {
       log_sensitive_access: {
         Args: { access_type: string; record_id: string; table_name: string }
         Returns: undefined
+      }
+      validate_cnh: {
+        Args: { cnh: string }
+        Returns: boolean
+      }
+      validate_cpf: {
+        Args: { cpf: string }
+        Returns: boolean
       }
       validate_password_strength: {
         Args: { password: string }
