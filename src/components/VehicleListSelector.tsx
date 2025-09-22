@@ -39,12 +39,16 @@ export default function VehicleListSelector({ onSelect, vehicleType }: VehicleLi
       
       // Filter by vehicle type if specified
       if (vehicleType) {
-        query = query.eq('vehicle_type', vehicleType);
+        // Ensure proper mapping of vehicle types
+        const dbVehicleType = vehicleType === 'car' ? 'car' : 'moto';
+        query = query.eq('vehicle_type', dbVehicleType);
       }
       
       const { data, error } = await query.order('marca_modelo');
 
       if (error) throw error;
+      
+      console.log(`Fetched ${data?.length || 0} vehicles for type: ${vehicleType || 'all'}`);
       setVehicles(data || []);
     } catch (error) {
       console.error('Error fetching vehicles:', error);
@@ -142,9 +146,19 @@ export default function VehicleListSelector({ onSelect, vehicleType }: VehicleLi
           ) : (
             <div className="text-center py-8">
               <Car className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Nenhum veículo encontrado</h3>
+              <h3 className="text-lg font-medium mb-2">
+                {vehicleType ? 
+                  `Nenhum ${vehicleType === 'car' ? 'carro' : 'moto'} encontrado` : 
+                  'Nenhum veículo encontrado'
+                }
+              </h3>
               <p className="text-muted-foreground mb-4">
-                {searchTerm ? "Tente ajustar os filtros de busca" : "Cadastre um veículo para continuar"}
+                {searchTerm ? 
+                  "Tente ajustar os filtros de busca" : 
+                  vehicleType ? 
+                    `Cadastre um ${vehicleType === 'car' ? 'carro' : 'moto'} para continuar` :
+                    "Cadastre um veículo para continuar"
+                }
               </p>
               <Button onClick={() => window.location.href = '/vehicles'}>
                 <Plus className="h-4 w-4 mr-2" />
