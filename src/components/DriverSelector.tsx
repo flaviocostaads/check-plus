@@ -47,38 +47,25 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
   }, []);
 
   const fetchDrivers = async () => {
+    setLoading(true);
     try {
+      // Use secure view that respects RLS policies
       const { data, error } = await supabase
-        .from('drivers')
+        .from('drivers_secure_view')
         .select('*')
         .eq('is_active', true)
         .order('nome_completo');
 
       if (error) {
-        if (error.code === 'PGRST301') {
-          toast.error("Você não tem permissão para acessar os dados de motoristas. Entre em contato com um administrador.");
-          return;
-        }
-        throw error;
+        console.error('Database error:', error);
+        toast.error('Acesso negado ou erro ao carregar motoristas');
+        return;
       }
       
       setDrivers(data || []);
-      
-      // Log access to sensitive driver data
-      if (data && data.length > 0) {
-        try {
-          await supabase.rpc('log_sensitive_access', {
-            table_name: 'drivers',
-            record_id: null,
-            access_type: 'bulk_view'
-          });
-        } catch (logError) {
-          console.error('Error logging access:', logError);
-        }
-      }
     } catch (error) {
       console.error('Error fetching drivers:', error);
-      toast.error("Erro ao carregar motoristas");
+      toast.error('Erro ao carregar motoristas');
     } finally {
       setLoading(false);
     }

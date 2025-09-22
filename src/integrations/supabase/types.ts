@@ -357,6 +357,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "inspections_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers_secure_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "inspections_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
@@ -475,12 +482,60 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      drivers_secure_view: {
+        Row: {
+          avatar_url: string | null
+          cnh_numero: string | null
+          cnh_validade: string | null
+          cpf: string | null
+          created_at: string | null
+          email: string | null
+          endereco: string | null
+          id: string | null
+          is_active: boolean | null
+          nome_completo: string | null
+          telefone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          cnh_numero?: string | null
+          cnh_validade?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          email?: string | null
+          endereco?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          nome_completo?: string | null
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          cnh_numero?: string | null
+          cnh_validade?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          email?: string | null
+          endereco?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          nome_completo?: string | null
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      log_driver_access: {
+        Args: { driver_id: string }
+        Returns: undefined
       }
       log_sensitive_access: {
         Args: { access_type: string; record_id: string; table_name: string }

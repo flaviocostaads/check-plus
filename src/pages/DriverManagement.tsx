@@ -71,34 +71,21 @@ export default function DriverManagement() {
   }, []);
 
   const fetchDrivers = async () => {
+    setLoading(true);
     try {
+      // Use secure view that respects role-based access control
       const { data, error } = await supabase
-        .from('drivers')
+        .from('drivers_secure_view')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
-        if (error.code === 'PGRST301') {
-          toast.error("Você não tem permissão para acessar os dados de motoristas. Entre em contato com um administrador.");
-          return;
-        }
-        throw error;
+        console.error('Database error:', error);
+        toast.error('Acesso negado: apenas administradores podem gerenciar motoristas');
+        return;
       }
-
-      setDrivers(data || []);
       
-      // Log access to sensitive driver data
-      if (data && data.length > 0) {
-        try {
-          await supabase.rpc('log_sensitive_access', {
-            table_name: 'drivers',
-            record_id: null,
-            access_type: 'bulk_view'
-          });
-        } catch (logError) {
-          console.error('Error logging access:', logError);
-        }
-      }
+      setDrivers(data || []);
       
       // Fetch stats for each driver
       if (data) {
@@ -112,7 +99,7 @@ export default function DriverManagement() {
       }
     } catch (error) {
       console.error('Error fetching drivers:', error);
-      toast.error("Erro ao carregar motoristas");
+      toast.error('Erro ao carregar motoristas');
     } finally {
       setLoading(false);
     }
