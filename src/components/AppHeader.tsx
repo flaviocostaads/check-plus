@@ -21,7 +21,7 @@ interface AppHeaderProps {
 }
 
 export const AppHeader = ({ 
-  user = { email: "demo@nsa.com", name: "Demo User", role: "operator" as const }, 
+  user = { email: "demo@nsa.com", name: "Demo User", role: "admin" as const }, 
   onLogout = () => {}, 
   showVehiclePhoto = false,
   vehiclePhotoUrl = "",
@@ -55,7 +55,7 @@ export const AppHeader = ({
     { name: "Checklist", href: "/checklist", icon: CheckSquare },
     { name: "Histórico", href: "/history", icon: FileText },
     { name: "Relatórios", href: "/reports", icon: FileText },
-    { name: "Usuários", href: "/users", icon: Users },
+    ...(user.role === 'admin' ? [{ name: "Usuários", href: "/users", icon: Users }] : []),
     { name: "Configurações", href: "/settings", icon: Settings },
   ];
 
@@ -112,8 +112,8 @@ export const AppHeader = ({
                 <Bell className="h-5 w-5 text-muted-foreground" />
               </Button>
               
-              <Button variant="ghost" size="sm" onClick={() => window.location.href = '/settings'}>
-                <Settings className="h-5 w-5 text-muted-foreground" />
+              <Button variant="ghost" size="sm" onClick={onLogout}>
+                <LogOut className="h-5 w-5 text-muted-foreground" />
               </Button>
               
               {/* Navigation Menu */}

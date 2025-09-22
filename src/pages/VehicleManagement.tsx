@@ -11,7 +11,8 @@ import { Plus, Edit, Trash2, Car, Bike, Camera, Image, ArrowLeft } from "lucide-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { VehicleType } from "@/types/inspection";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 
 interface Vehicle {
   id: string;
@@ -30,6 +31,7 @@ interface Vehicle {
 }
 
 const VehicleManagement = () => {
+  const navigate = useNavigate();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -204,7 +206,7 @@ const VehicleManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <AuthenticatedLayout>
       <div className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -496,7 +498,7 @@ const VehicleManagement = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

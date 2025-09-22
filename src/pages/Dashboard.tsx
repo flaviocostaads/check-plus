@@ -64,7 +64,7 @@ interface Stats {
 }
 
 const Dashboard = ({ 
-  user = { email: "demo@nsa.com", name: "Demo User", role: "operator" as const }, 
+  user = { email: "demo@nsa.com", name: "Demo User", role: "admin" as const }, 
   onNewInspection, 
   onLogout = () => {} 
 }: DashboardProps = {}) => {
@@ -425,7 +425,7 @@ const Dashboard = ({
                   <Car className="h-4 w-4 mr-2" />
                   Gerenciar Veículos
                 </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/history'}>
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/reports'}>
                   <FileText className="h-4 w-4 mr-2" />
                   Relatórios
                 </Button>
@@ -433,10 +433,12 @@ const Dashboard = ({
                   <Users className="h-4 w-4 mr-2" />
                   Motoristas
                 </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/users'}>
-                  <Users className="h-4 w-4 mr-2" />
-                  Usuários
-                </Button>
+                {(user.role === 'admin') && (
+                  <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/users'}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Usuários
+                  </Button>
+                )}
                 <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/checklist'}>
                   <ClipboardList className="h-4 w-4 mr-2" />
                   Gerenciador de Checklists
