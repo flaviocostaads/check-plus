@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Car, User, CheckCircle } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import VehicleListSelector from "@/components/VehicleListSelector";
 import DriverSelector from "@/components/DriverSelector";
 
@@ -27,9 +27,18 @@ interface Driver {
 
 export default function NewInspection() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState(1);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+  const [vehicleType, setVehicleType] = useState<'car' | 'moto' | undefined>();
+
+  useEffect(() => {
+    // Get vehicle type from navigation state
+    if (location.state?.vehicleType) {
+      setVehicleType(location.state.vehicleType);
+    }
+  }, [location.state]);
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
@@ -57,48 +66,51 @@ export default function NewInspection() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-start sm:items-center gap-3 sm:gap-4 mb-6">
           <Link to="/dashboard">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="btn-touch">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar ao Dashboard
+              <span className="hidden sm:inline">Voltar ao Dashboard</span>
+              <span className="sm:hidden">Voltar</span>
             </Button>
           </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-              <CheckCircle className="h-8 w-8 text-primary" />
+          <div className="flex-1">
+            <h1 className="text-xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
+              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               Nova Inspeção
             </h1>
-            <p className="text-muted-foreground">
-              Inicie uma nova inspeção veicular
+            <p className="text-sm sm:text-base text-muted-foreground">
+              {vehicleType === 'car' ? 'Inspeção de Carro' : 
+               vehicleType === 'moto' ? 'Inspeção de Moto' : 
+               'Inicie uma nova inspeção veicular'}
             </p>
           </div>
         </div>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center space-x-4">
-            <div className={`flex items-center space-x-2 ${step >= 1 ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-primary text-white' : 'bg-muted'}`}>
+        {/* Progress Steps - Mobile optimized */}
+        <div className="flex items-center justify-center mb-6 sm:mb-8 overflow-x-auto">
+          <div className="flex items-center space-x-2 sm:space-x-4 min-w-max px-4">
+            <div className={`flex items-center space-x-1 sm:space-x-2 ${step >= 1 ? 'text-primary' : 'text-muted-foreground'}`}>
+              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm ${step >= 1 ? 'bg-primary text-white' : 'bg-muted'}`}>
                 1
               </div>
-              <span className="font-medium">Selecionar Veículo</span>
+              <span className="font-medium text-xs sm:text-sm">Selecionar Veículo</span>
             </div>
-            <div className="w-12 h-px bg-border"></div>
-            <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-primary text-white' : 'bg-muted'}`}>
+            <div className="w-6 sm:w-12 h-px bg-border"></div>
+            <div className={`flex items-center space-x-1 sm:space-x-2 ${step >= 2 ? 'text-primary' : 'text-muted-foreground'}`}>
+              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm ${step >= 2 ? 'bg-primary text-white' : 'bg-muted'}`}>
                 2
               </div>
-              <span className="font-medium">Selecionar Motorista</span>
+              <span className="font-medium text-xs sm:text-sm">Selecionar Motorista</span>
             </div>
-            <div className="w-12 h-px bg-border"></div>
-            <div className={`flex items-center space-x-2 ${step >= 3 ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-primary text-white' : 'bg-muted'}`}>
+            <div className="w-6 sm:w-12 h-px bg-border"></div>
+            <div className={`flex items-center space-x-1 sm:space-x-2 ${step >= 3 ? 'text-primary' : 'text-muted-foreground'}`}>
+              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm ${step >= 3 ? 'bg-primary text-white' : 'bg-muted'}`}>
                 3
               </div>
-              <span className="font-medium">Iniciar Inspeção</span>
+              <span className="font-medium text-xs sm:text-sm">Iniciar Inspeção</span>
             </div>
           </div>
         </div>
@@ -106,31 +118,31 @@ export default function NewInspection() {
         {/* Step Content */}
         <div className="max-w-4xl mx-auto">
           {step === 1 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Car className="h-5 w-5 text-primary" />
-                  Selecionar Veículo
+            <Card className="mx-2 sm:mx-0">
+              <CardHeader className="px-4 sm:px-6">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  Selecionar {vehicleType === 'car' ? 'Carro' : vehicleType === 'moto' ? 'Moto' : 'Veículo'}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <VehicleListSelector onSelect={handleVehicleSelect} />
+              <CardContent className="px-4 sm:px-6">
+                <VehicleListSelector onSelect={handleVehicleSelect} vehicleType={vehicleType} />
               </CardContent>
             </Card>
           )}
 
           {step === 2 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-primary" />
+            <Card className="mx-2 sm:mx-0">
+              <CardHeader className="px-4 sm:px-6">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   Selecionar Motorista
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="mb-4 p-4 bg-muted/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Veículo selecionado:</p>
-                  <p className="font-medium">{selectedVehicle?.marca_modelo} - {selectedVehicle?.placa}</p>
+              <CardContent className="px-4 sm:px-6">
+                <div className="mb-4 p-3 sm:p-4 bg-muted/30 rounded-lg">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Veículo selecionado:</p>
+                  <p className="font-medium text-sm sm:text-base">{selectedVehicle?.marca_modelo} - {selectedVehicle?.placa}</p>
                 </div>
                 <DriverSelector onNext={handleDriverNext} onBack={handleDriverBack} />
               </CardContent>
@@ -138,33 +150,34 @@ export default function NewInspection() {
           )}
 
           {step === 3 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary" />
+            <Card className="mx-2 sm:mx-0">
+              <CardHeader className="px-4 sm:px-6">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   Confirmar e Iniciar Inspeção
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-muted/30 rounded-lg space-y-2">
+              <CardContent className="space-y-4 px-4 sm:px-6">
+                <div className="p-3 sm:p-4 bg-muted/30 rounded-lg space-y-3">
                   <div>
-                    <p className="text-sm text-muted-foreground">Veículo:</p>
-                    <p className="font-medium">{selectedVehicle?.marca_modelo} - {selectedVehicle?.placa}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Veículo:</p>
+                    <p className="font-medium text-sm sm:text-base">{selectedVehicle?.marca_modelo} - {selectedVehicle?.placa}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Motorista:</p>
-                    <p className="font-medium">{selectedDriver?.nome_completo}</p>
-                    <p className="text-sm text-muted-foreground">CPF: {selectedDriver?.cpf}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Motorista:</p>
+                    <p className="font-medium text-sm sm:text-base">{selectedDriver?.nome_completo}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">CPF: {selectedDriver?.cpf}</p>
                   </div>
                 </div>
                 
-                <div className="flex gap-4">
-                  <Button variant="outline" onClick={() => setStep(2)}>
+                <div className="flex gap-3 sm:gap-4">
+                  <Button variant="outline" onClick={() => setStep(2)} className="flex-1 btn-touch">
                     Voltar
                   </Button>
-                  <Button onClick={handleStartInspection} className="bg-gradient-primary hover:opacity-90">
+                  <Button onClick={handleStartInspection} className="flex-1 bg-gradient-primary hover:opacity-90 btn-touch">
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Iniciar Inspeção
+                    <span className="hidden sm:inline">Iniciar Inspeção</span>
+                    <span className="sm:hidden">Iniciar</span>
                   </Button>
                 </div>
               </CardContent>

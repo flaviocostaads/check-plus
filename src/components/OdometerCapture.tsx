@@ -159,19 +159,20 @@ export const OdometerCapture = ({ onOdometerCapture, initialKm = "" }: OdometerC
           Fotografar Odômetro
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md mx-4 sm:mx-auto">
         <DialogHeader>
-          <DialogTitle>Registrar KM do Odômetro</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">Registrar KM do Odômetro</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="km">Quilometragem Atual</Label>
+            <Label htmlFor="km" className="text-sm sm:text-base">Quilometragem Atual</Label>
             <Input
               id="km"
               type="number"
               value={kmValue}
               onChange={(e) => setKmValue(e.target.value)}
               placeholder="Ex: 123456"
+              className="h-12 btn-touch text-base"
             />
           </div>
 
@@ -186,7 +187,7 @@ export const OdometerCapture = ({ onOdometerCapture, initialKm = "" }: OdometerC
                     Tire uma foto do odômetro para comprovar a quilometragem
                   </p>
                 </div>
-                <Button onClick={startCamera}>
+                <Button onClick={startCamera} className="btn-touch">
                   <Camera className="h-4 w-4 mr-2" />
                   Iniciar Câmera
                 </Button>
@@ -208,10 +209,10 @@ export const OdometerCapture = ({ onOdometerCapture, initialKm = "" }: OdometerC
                   </div>
                 </div>
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-                  <Button onClick={capturePhoto} size="lg" className="rounded-full">
+                  <Button onClick={capturePhoto} size="lg" className="rounded-full btn-touch">
                     <Camera className="h-5 w-5" />
                   </Button>
-                  <Button onClick={stopCamera} variant="outline" size="lg" className="rounded-full">
+                  <Button onClick={stopCamera} variant="outline" size="lg" className="rounded-full btn-touch">
                     <X className="h-5 w-5" />
                   </Button>
                 </div>
@@ -231,12 +232,12 @@ export const OdometerCapture = ({ onOdometerCapture, initialKm = "" }: OdometerC
                   <Button 
                     onClick={confirmPhoto} 
                     disabled={uploading || !kmValue.trim()}
-                    className="flex-1"
+                    className="flex-1 btn-touch"
                   >
                     <Check className="h-4 w-4 mr-2" />
                     {uploading ? "Salvando..." : "Confirmar"}
                   </Button>
-                  <Button onClick={retakePhoto} variant="outline">
+                  <Button onClick={retakePhoto} variant="outline" className="btn-touch">
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Repetir
                   </Button>
