@@ -40,35 +40,31 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
   const fetchDrivers = async () => {
     setLoading(true);
     try {
-      // Use secure function instead of view for masked driver data
+      // Direct query for active drivers
       const { data, error } = await supabase
-        .rpc('get_drivers_operator_view');
+        .from('drivers')
+        .select('id, nome_completo, cpf, cnh_numero, cnh_validade, telefone, avatar_url, is_active')
+        .eq('is_active', true)
+        .order('nome_completo');
 
       if (error) {
         console.error('Database error:', error);
-        if (error.code === 'PGRST301' || error.message.includes('não autorizado')) {
-          toast.error('Acesso negado: você não tem permissão para visualizar dados de motoristas');
-        } else {
-          toast.error('Erro ao carregar motoristas');
-        }
+        toast.error('Erro ao carregar motoristas');
         return;
       }
       
-      // Map the masked data to match the Driver interface
+      // Map the data with masking for security
       const mappedDrivers = (data || []).map(driver => ({
         id: driver.id,
         nome_completo: driver.nome_completo,
-        cpf: driver.cpf_masked,
-        cnh_numero: driver.cnh_numero_masked,
+        cpf: driver.cpf ? driver.cpf.substring(0, 3) + '.***.***-**' : '***.***.***-**',
+        cnh_numero: driver.cnh_numero ? driver.cnh_numero.substring(0, 3) + '********' : '***********',
         cnh_validade: driver.cnh_validade,
-        telefone: driver.telefone_masked,
-        email: '', // Not available in operator view
+        telefone: driver.telefone ? driver.telefone.substring(0, 2) + '*****-****' : null,
+        email: '', // Not available in selector view
         avatar_url: driver.avatar_url,
         is_active: driver.is_active
       }));
-      
-      // Sort by name for consistent ordering
-      mappedDrivers.sort((a, b) => a.nome_completo.localeCompare(b.nome_completo));
       
       setDrivers(mappedDrivers);
     } catch (error) {

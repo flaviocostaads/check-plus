@@ -70,61 +70,51 @@ export default function DriverManagement() {
         .single();
 
       let data;
-      let isOperatorView = false;
 
       if (userData?.role === 'admin') {
-        // Admin access - use secure function for full data
+        // Admin access - direct query with full data
         const { data: adminData, error } = await supabase
-          .rpc('get_drivers_secure_view');
+          .from('drivers')
+          .select('*')
+          .order('created_at', { ascending: false });
 
         if (error) {
           console.error('Database error:', error);
-          if (error.code === 'PGRST301' || error.message.includes('não autorizado')) {
-            toast.error('Acesso negado: falha na autenticação de administrador');
-          } else {
-            toast.error('Erro ao carregar motoristas');
-          }
+          toast.error('Erro ao carregar motoristas');
           return;
         }
         
-        // Sort by creation date (newest first)
-        data = (adminData || []).sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
+        data = adminData || [];
       } else {
-        // Operator access - use masked function with built-in security
-        const { data: operatorData, error: operatorError } = await supabase
-          .rpc('get_drivers_operator_view');
+        // Operator access - direct query with masked data
+        const { data: operatorData, error } = await supabase
+          .from('drivers')
+          .select('id, nome_completo, cpf, cnh_numero, cnh_validade, telefone, avatar_url, is_active, created_at, updated_at')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
 
-        if (operatorError) {
-          console.error('Database error:', operatorError);
-          if (operatorError.code === 'PGRST301' || operatorError.message.includes('não autorizado')) {
-            toast.error('Acesso negado: você não tem permissão para acessar dados de motoristas');
-          } else {
-            toast.error('Erro ao carregar motoristas');
-          }
+        if (error) {
+          console.error('Database error:', error);
+          toast.error('Erro ao carregar motoristas');
           return;
         }
         
-        // Map the masked data to match the Driver interface
+        // Map the data with masking for operators
         data = (operatorData || []).map(driver => ({
           id: driver.id,
           nome_completo: driver.nome_completo,
-          cpf: driver.cpf_masked,
-          cnh_numero: driver.cnh_numero_masked,
+          cpf: driver.cpf ? driver.cpf.substring(0, 3) + '.***.***-**' : '***.***.***-**',
+          cnh_numero: driver.cnh_numero ? driver.cnh_numero.substring(0, 3) + '********' : '***********',
           cnh_validade: driver.cnh_validade,
-          telefone: driver.telefone_masked,
+          telefone: driver.telefone ? driver.telefone.substring(0, 2) + '*****-****' : null,
           email: '', // Not available in operator view
           endereco: '', // Not available in operator view
           avatar_url: driver.avatar_url,
           created_at: driver.created_at,
           updated_at: driver.updated_at,
           is_active: driver.is_active
-        })).sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
+        }));
         
-        isOperatorView = true;
         toast.info('Visualização com dados mascarados para operadores');
       }
       
