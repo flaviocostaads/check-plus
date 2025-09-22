@@ -357,20 +357,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "inspections_driver_id_fkey"
-            columns: ["driver_id"]
-            isOneToOne: false
-            referencedRelation: "drivers_operator_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "inspections_driver_id_fkey"
-            columns: ["driver_id"]
-            isOneToOne: false
-            referencedRelation: "drivers_secure_view"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "inspections_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
@@ -550,30 +536,6 @@ export type Database = {
           telefone_masked: string | null
           updated_at: string | null
         }
-        Insert: {
-          avatar_url?: string | null
-          cnh_numero_masked?: never
-          cnh_validade?: string | null
-          cpf_masked?: never
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          nome_completo?: string | null
-          telefone_masked?: never
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          cnh_numero_masked?: never
-          cnh_validade?: string | null
-          cpf_masked?: never
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          nome_completo?: string | null
-          telefone_masked?: never
-          updated_at?: string | null
-        }
         Relationships: []
       }
       drivers_secure_view: {
@@ -591,34 +553,6 @@ export type Database = {
           telefone: string | null
           updated_at: string | null
         }
-        Insert: {
-          avatar_url?: string | null
-          cnh_numero?: string | null
-          cnh_validade?: string | null
-          cpf?: string | null
-          created_at?: string | null
-          email?: string | null
-          endereco?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          nome_completo?: string | null
-          telefone?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          cnh_numero?: string | null
-          cnh_validade?: string | null
-          cpf?: string | null
-          created_at?: string | null
-          email?: string | null
-          endereco?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          nome_completo?: string | null
-          telefone?: string | null
-          updated_at?: string | null
-        }
         Relationships: []
       }
     }
@@ -626,6 +560,38 @@ export type Database = {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_drivers_operator_view: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string
+          cnh_numero_masked: string
+          cnh_validade: string
+          cpf_masked: string
+          created_at: string
+          id: string
+          is_active: boolean
+          nome_completo: string
+          telefone_masked: string
+          updated_at: string
+        }[]
+      }
+      get_drivers_secure_view: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string
+          cnh_numero: string
+          cnh_validade: string
+          cpf: string
+          created_at: string
+          email: string
+          endereco: string
+          id: string
+          is_active: boolean
+          nome_completo: string
+          telefone: string
+          updated_at: string
+        }[]
       }
       log_data_access: {
         Args: { operation: string; record_id: string; table_name: string }

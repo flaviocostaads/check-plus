@@ -84,9 +84,9 @@ export default function DriverManagement() {
       let isOperatorView = false;
 
       if (userData?.role === 'admin') {
-        // Admin access - try full drivers table
+        // Admin access - use secure view for full data
         const { data: adminData, error } = await supabase
-          .from('drivers')
+          .from('drivers_secure_view')
           .select('*')
           .order('created_at', { ascending: false });
 
@@ -101,7 +101,7 @@ export default function DriverManagement() {
         }
         data = adminData;
       } else {
-        // Operator access - use masked view
+        // Operator access - use masked view with built-in security
         const { data: operatorData, error: operatorError } = await supabase
           .from('drivers_operator_view')
           .select('*')
