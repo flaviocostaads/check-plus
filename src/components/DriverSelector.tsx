@@ -49,15 +49,17 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
   const fetchDrivers = async () => {
     setLoading(true);
     try {
-      // Try to access the operator view (which provides masked data for operators)
+      // Use secure function instead of view for masked driver data
       const { data, error } = await supabase
-        .from('drivers_operator_view')
-        .select('*')
-        .order('nome_completo');
+        .rpc('get_drivers_operator_view');
 
       if (error) {
         console.error('Database error:', error);
-        toast.error('Acesso negado: entre em contato com um administrador');
+        if (error.code === 'PGRST301' || error.message.includes('não autorizado')) {
+          toast.error('Acesso negado: você não tem permissão para visualizar dados de motoristas');
+        } else {
+          toast.error('Erro ao carregar motoristas');
+        }
         return;
       }
       
@@ -73,6 +75,9 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
         avatar_url: driver.avatar_url,
         is_active: driver.is_active
       }));
+      
+      // Sort by name for consistent ordering
+      mappedDrivers.sort((a, b) => a.nome_completo.localeCompare(b.nome_completo));
       
       setDrivers(mappedDrivers);
     } catch (error) {

@@ -523,38 +523,7 @@ export type Database = {
       }
     }
     Views: {
-      drivers_operator_view: {
-        Row: {
-          avatar_url: string | null
-          cnh_numero_masked: string | null
-          cnh_validade: string | null
-          cpf_masked: string | null
-          created_at: string | null
-          id: string | null
-          is_active: boolean | null
-          nome_completo: string | null
-          telefone_masked: string | null
-          updated_at: string | null
-        }
-        Relationships: []
-      }
-      drivers_secure_view: {
-        Row: {
-          avatar_url: string | null
-          cnh_numero: string | null
-          cnh_validade: string | null
-          cpf: string | null
-          created_at: string | null
-          email: string | null
-          endereco: string | null
-          id: string | null
-          is_active: boolean | null
-          nome_completo: string | null
-          telefone: string | null
-          updated_at: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_current_user_role: {

@@ -84,11 +84,9 @@ export default function DriverManagement() {
       let isOperatorView = false;
 
       if (userData?.role === 'admin') {
-        // Admin access - use secure view for full data
+        // Admin access - use secure function for full data
         const { data: adminData, error } = await supabase
-          .from('drivers_secure_view')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .rpc('get_drivers_secure_view');
 
         if (error) {
           console.error('Database error:', error);
@@ -99,13 +97,15 @@ export default function DriverManagement() {
           }
           return;
         }
-        data = adminData;
+        
+        // Sort by creation date (newest first)
+        data = (adminData || []).sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
       } else {
-        // Operator access - use masked view with built-in security
+        // Operator access - use masked function with built-in security
         const { data: operatorData, error: operatorError } = await supabase
-          .from('drivers_operator_view')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .rpc('get_drivers_operator_view');
 
         if (operatorError) {
           console.error('Database error:', operatorError);
@@ -131,7 +131,9 @@ export default function DriverManagement() {
           created_at: driver.created_at,
           updated_at: driver.updated_at,
           is_active: driver.is_active
-        }));
+        })).sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
         
         isOperatorView = true;
         toast.info('Visualização com dados mascarados para operadores');
