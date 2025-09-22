@@ -77,9 +77,28 @@ export default function DriverManagement() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST301') {
+          toast.error("Você não tem permissão para acessar os dados de motoristas. Entre em contato com um administrador.");
+          return;
+        }
+        throw error;
+      }
 
       setDrivers(data || []);
+      
+      // Log access to sensitive driver data
+      if (data && data.length > 0) {
+        try {
+          await supabase.rpc('log_sensitive_access', {
+            table_name: 'drivers',
+            record_id: null,
+            access_type: 'bulk_view'
+          });
+        } catch (logError) {
+          console.error('Error logging access:', logError);
+        }
+      }
       
       // Fetch stats for each driver
       if (data) {
@@ -151,7 +170,13 @@ export default function DriverManagement() {
           .update(formData)
           .eq('id', selectedDriver.id);
 
-        if (error) throw error;
+        if (error) {
+          if (error.code === 'PGRST301') {
+            toast.error("Você não tem permissão para atualizar motoristas. Entre em contato com um administrador.");
+            return;
+          }
+          throw error;
+        }
         toast.success("Motorista atualizado com sucesso!");
         setIsEditDialogOpen(false);
       } else {
@@ -160,7 +185,13 @@ export default function DriverManagement() {
           .from('drivers')
           .insert([formData]);
 
-        if (error) throw error;
+        if (error) {
+          if (error.code === 'PGRST301') {
+            toast.error("Você não tem permissão para criar motoristas. Entre em contato com um administrador.");
+            return;
+          }
+          throw error;
+        }
         toast.success("Motorista cadastrado com sucesso!");
         setIsAddDialogOpen(false);
       }
@@ -182,7 +213,13 @@ export default function DriverManagement() {
         .delete()
         .eq('id', driverId);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST301') {
+          toast.error("Você não tem permissão para excluir motoristas. Entre em contato com um administrador.");
+          return;
+        }
+        throw error;
+      }
       
       toast.success("Motorista excluído com sucesso!");
       fetchDrivers();

@@ -54,8 +54,28 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
         .eq('is_active', true)
         .order('nome_completo');
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST301') {
+          toast.error("Você não tem permissão para acessar os dados de motoristas. Entre em contato com um administrador.");
+          return;
+        }
+        throw error;
+      }
+      
       setDrivers(data || []);
+      
+      // Log access to sensitive driver data
+      if (data && data.length > 0) {
+        try {
+          await supabase.rpc('log_sensitive_access', {
+            table_name: 'drivers',
+            record_id: null,
+            access_type: 'bulk_view'
+          });
+        } catch (logError) {
+          console.error('Error logging access:', logError);
+        }
+      }
     } catch (error) {
       console.error('Error fetching drivers:', error);
       toast.error("Erro ao carregar motoristas");
@@ -74,7 +94,13 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST301') {
+          toast.error("Você não tem permissão para criar motoristas. Entre em contato com um administrador.");
+          return;
+        }
+        throw error;
+      }
       
       toast.success("Motorista cadastrado com sucesso!");
       setIsAddDialogOpen(false);

@@ -482,6 +482,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      log_sensitive_access: {
+        Args: { access_type: string; record_id: string; table_name: string }
+        Returns: undefined
+      }
       validate_password_strength: {
         Args: { password: string }
         Returns: boolean
