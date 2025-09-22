@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -25,6 +23,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import DriverFormDialog from "@/components/DriverFormDialog";
 
 interface Driver {
   id: string;
@@ -55,16 +54,6 @@ export default function DriverManagement() {
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [driverStats, setDriverStats] = useState<Record<string, DriverStats>>({});
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    nome_completo: "",
-    cpf: "",
-    cnh_numero: "",
-    cnh_validade: "",
-    telefone: "",
-    email: "",
-    endereco: ""
-  });
 
   useEffect(() => {
     fetchDrivers();
@@ -206,61 +195,9 @@ export default function DriverManagement() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      // Additional security check
-      const { data: userData } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
-
-      if (userData?.role !== 'admin') {
-        toast.error("Acesso negado: apenas administradores podem gerenciar motoristas");
-        return;
-      }
-
-      if (selectedDriver) {
-        // Update existing driver
-        const { error } = await supabase
-          .from('drivers')
-          .update(formData)
-          .eq('id', selectedDriver.id);
-
-        if (error) {
-          if (error.code === 'PGRST301' || error.message.includes('não autorizado')) {
-            toast.error("Você não tem permissão para atualizar motoristas. Entre em contato com um administrador.");
-            return;
-          }
-          throw error;
-        }
-        toast.success("Motorista atualizado com sucesso!");
-        setIsEditDialogOpen(false);
-      } else {
-        // Create new driver
-        const { error } = await supabase
-          .from('drivers')
-          .insert([formData]);
-
-        if (error) {
-          if (error.code === 'PGRST301' || error.message.includes('não autorizado')) {
-            toast.error("Você não tem permissão para criar motoristas. Entre em contato com um administrador.");
-            return;
-          }
-          throw error;
-        }
-        toast.success("Motorista criado com sucesso!");
-        setIsAddDialogOpen(false);
-      }
-
-      resetForm();
-      fetchDrivers();
-    } catch (error: any) {
-      console.error('Error saving driver:', error);
-      toast.error("Erro ao salvar motorista");
-    }
+  const handleDriverCreated = (newDriver: any) => {
+    fetchDrivers();
+    toast.success("Motorista cadastrado com sucesso!");
   };
 
   const handleDelete = async (driverId: string) => {
@@ -288,193 +225,10 @@ export default function DriverManagement() {
     }
   };
 
-  const handleEdit = (driver: Driver) => {
-    setSelectedDriver(driver);
-    setFormData({
-      nome_completo: driver.nome_completo,
-      cpf: driver.cpf,
-      cnh_numero: driver.cnh_numero,
-      cnh_validade: driver.cnh_validade,
-      telefone: driver.telefone || "",
-      email: driver.email || "",
-      endereco: driver.endereco || ""
-    });
-    setIsEditDialogOpen(true);
-  };
-
-  const resetForm = () => {
-    setFormData({
-      nome_completo: "",
-      cpf: "",
-      cnh_numero: "",
-      cnh_validade: "",
-      telefone: "",
-      email: "",
-      endereco: ""
-    });
-    setSelectedDriver(null);
-  };
-
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 11) {
-      return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-    }
-    return value;
-  };
-
-  const formatDate = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 8) {
-      return numbers.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
-    }
-    return value;
-  };
-
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 11) {
-      if (numbers.length <= 10) {
-        return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-      } else {
-        return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-      }
-    }
-    return value;
-  };
-
   const filteredDrivers = drivers.filter(driver =>
     driver.nome_completo.toLowerCase().includes(searchTerm.toLowerCase()) ||
     driver.cpf.includes(searchTerm) ||
     driver.cnh_numero.includes(searchTerm)
-  );
-
-  const DriverForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="nome_completo">Nome Completo *</Label>
-          <Input
-            id="nome_completo"
-            value={formData.nome_completo}
-            onChange={(e) => setFormData(prev => ({ ...prev, nome_completo: e.target.value }))}
-            required
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="cpf">CPF *</Label>
-          <Input
-            id="cpf"
-            value={formData.cpf}
-            onChange={(e) => {
-              const value = e.target.value;
-              const numbers = value.replace(/\D/g, '');
-              if (numbers.length <= 11) {
-                const formatted = formatCPF(numbers);
-                setFormData(prev => ({ ...prev, cpf: formatted }));
-              }
-            }}
-            placeholder="000.000.000-00"
-            maxLength={14}
-            required
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="cnh_numero">CNH Número *</Label>
-          <Input
-            id="cnh_numero"
-            value={formData.cnh_numero}
-            onChange={(e) => {
-              const value = e.target.value;
-              const numbers = value.replace(/\D/g, '');
-              if (numbers.length <= 11) {
-                setFormData(prev => ({ ...prev, cnh_numero: numbers }));
-              }
-            }}
-            placeholder="12345678901"
-            maxLength={11}
-            required
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="cnh_validade">Validade CNH *</Label>
-          <Input
-            id="cnh_validade"
-            value={formData.cnh_validade}
-            onChange={(e) => {
-              const value = e.target.value;
-              const numbers = value.replace(/\D/g, '');
-              if (numbers.length <= 8) {
-                const formatted = formatDate(numbers);
-                setFormData(prev => ({ ...prev, cnh_validade: formatted }));
-              }
-            }}
-            placeholder="DD/MM/AAAA"
-            maxLength={10}
-            required
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="telefone">Telefone</Label>
-          <Input
-            id="telefone"
-            value={formData.telefone}
-            onChange={(e) => {
-              const value = e.target.value;
-              const numbers = value.replace(/\D/g, '');
-              if (numbers.length <= 11) {
-                const formatted = formatPhone(numbers);
-                setFormData(prev => ({ ...prev, telefone: formatted }));
-              }
-            }}
-            placeholder="(11) 99999-9999"
-            maxLength={15}
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-            placeholder="email@exemplo.com"
-          />
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="endereco">Endereço</Label>
-        <Input
-          id="endereco"
-          value={formData.endereco}
-          onChange={(e) => setFormData(prev => ({ ...prev, endereco: e.target.value }))}
-          placeholder="Endereço completo"
-        />
-      </div>
-
-      <div className="flex gap-2 pt-4">
-        <Button type="submit" className="flex-1">
-          {selectedDriver ? "Atualizar" : "Cadastrar"}
-        </Button>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => {
-            resetForm();
-            setIsAddDialogOpen(false);
-            setIsEditDialogOpen(false);
-          }}
-        >
-          Cancelar
-        </Button>
-      </div>
-    </form>
   );
 
   return (
@@ -497,27 +251,17 @@ export default function DriverManagement() {
             </div>
           </div>
           
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Plus className="h-4 w-4 mr-2" />
-                Cadastrar Motorista
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Cadastrar Novo Motorista</DialogTitle>
-              </DialogHeader>
-              <DriverForm />
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setIsAddDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Cadastrar Motorista
+          </Button>
         </div>
 
         {/* Search and Filters */}
         <Card className="mb-6">
-          <CardContent className="p-4">
+          <CardContent className="pt-6">
             <div className="flex gap-4">
-              <div className="flex-1 relative">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Buscar por nome, CPF ou CNH..."
@@ -538,6 +282,18 @@ export default function DriverManagement() {
         {loading ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">Carregando motoristas...</p>
+          </div>
+        ) : filteredDrivers.length === 0 ? (
+          <div className="text-center py-12">
+            <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Nenhum motorista encontrado</h3>
+            <p className="text-muted-foreground mb-6">
+              {searchTerm ? "Tente ajustar os filtros de busca" : "Comece cadastrando seu primeiro motorista"}
+            </p>
+            <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Cadastrar Motorista
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -622,7 +378,7 @@ export default function DriverManagement() {
                         variant="outline"
                         size="sm"
                         className="flex-1"
-                        onClick={() => handleEdit(driver)}
+                        onClick={() => toast.info("Funcionalidade de edição em desenvolvimento")}
                       >
                         <Edit className="h-4 w-4 mr-1" />
                         Editar
@@ -631,7 +387,6 @@ export default function DriverManagement() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDelete(driver.id)}
-                        className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -642,33 +397,13 @@ export default function DriverManagement() {
             })}
           </div>
         )}
-
-        {filteredDrivers.length === 0 && !loading && (
-          <Card>
-            <CardContent className="text-center py-8">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Nenhum motorista encontrado</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm ? "Tente ajustar os filtros de busca" : "Comece cadastrando seu primeiro motorista"}
-              </p>
-              <Button onClick={() => setIsAddDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Cadastrar Motorista
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        
+        <DriverFormDialog 
+          open={isAddDialogOpen}
+          onOpenChange={setIsAddDialogOpen}
+          onDriverCreated={handleDriverCreated}
+        />
       </div>
-
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Editar Motorista</DialogTitle>
-          </DialogHeader>
-          <DriverForm />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

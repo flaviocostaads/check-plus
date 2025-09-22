@@ -31,17 +31,23 @@ export default function DriverForm({ onNext, onBack, initialData }: DriverFormPr
 
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, '');
-    return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    if (numbers.length <= 11) {
+      return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    }
+    return value.slice(0, 14); // Prevent over-typing
   };
 
   const formatCNH = (value: string) => {
     const numbers = value.replace(/\D/g, '');
-    return numbers;
+    return numbers.slice(0, 11); // Limit to 11 digits
   };
 
   const formatDate = (value: string) => {
     const numbers = value.replace(/\D/g, '');
-    return numbers.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
+    if (numbers.length <= 8) {
+      return numbers.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
+    }
+    return value.slice(0, 10); // Prevent over-typing
   };
 
   const isFormValid = Object.values(formData).every(value => value.trim() !== '');
@@ -84,13 +90,10 @@ export default function DriverForm({ onNext, onBack, initialData }: DriverFormPr
                   value={formData.cpf}
                   onChange={(e) => {
                     const formatted = formatCPF(e.target.value);
-                    if (formatted.length <= 14) {
-                      handleChange('cpf', formatted);
-                    }
+                    handleChange('cpf', formatted);
                   }}
                   placeholder="000.000.000-00"
                   className="h-12"
-                  maxLength={14}
                   required
                 />
               </div>
@@ -102,13 +105,10 @@ export default function DriverForm({ onNext, onBack, initialData }: DriverFormPr
                   value={formData.cnh_numero}
                   onChange={(e) => {
                     const formatted = formatCNH(e.target.value);
-                    if (formatted.length <= 11) {
-                      handleChange('cnh_numero', formatted);
-                    }
+                    handleChange('cnh_numero', formatted);
                   }}
                   placeholder="12345678901"
                   className="h-12"
-                  maxLength={11}
                   required
                 />
               </div>
@@ -120,13 +120,10 @@ export default function DriverForm({ onNext, onBack, initialData }: DriverFormPr
                   value={formData.cnh_validade}
                   onChange={(e) => {
                     const formatted = formatDate(e.target.value);
-                    if (formatted.length <= 10) {
-                      handleChange('cnh_validade', formatted);
-                    }
+                    handleChange('cnh_validade', formatted);
                   }}
                   placeholder="DD/MM/AAAA"
                   className="h-12"
-                  maxLength={10}
                   required
                 />
               </div>
