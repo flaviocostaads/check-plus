@@ -24,37 +24,69 @@ export const OdometerCapture = ({ onOdometerCapture, initialKm = "" }: OdometerC
 
   const startCamera = async () => {
     try {
+      console.log('Iniciando câmera...');
+      
       // Check if getUserMedia is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Camera not supported on this device');
       }
 
-      // Request camera permissions with fallback options
-      const constraints = {
+      // Start with more permissive constraints and fallback if needed
+      let constraints: MediaStreamConstraints = {
         video: {
-          facingMode: { ideal: 'environment' },
+          facingMode: 'environment',
           width: { ideal: 1920, min: 640 },
           height: { ideal: 1080, min: 480 }
         }
       };
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      let stream = null;
       
-      if (videoRef.current) {
+      try {
+        console.log('Tentando câmera traseira...');
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (error) {
+        console.log('Câmera traseira falhou, tentando qualquer câmera...', error);
+        // Fallback to any available camera
+        constraints = {
+          video: true
+        };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      }
+      
+      if (videoRef.current && stream) {
+        console.log('Configurando video element...');
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
-        setIsStreaming(true);
+        
+        // Wait for video to be ready
+        videoRef.current.onloadedmetadata = () => {
+          console.log('Video metadata carregado');
+          if (videoRef.current) {
+            videoRef.current.play().then(() => {
+              console.log('Video iniciado com sucesso');
+              setIsStreaming(true);
+            }).catch((playError) => {
+              console.error('Erro ao iniciar video:', playError);
+              toast.error("Erro ao iniciar a visualização da câmera");
+            });
+          }
+        };
       }
     } catch (error: any) {
       console.error("Erro ao acessar câmera:", error);
       let errorMessage = "Erro ao acessar a câmera";
       
       if (error.name === 'NotAllowedError') {
-        errorMessage = "Permissão da câmera negada. Verifique as configurações do navegador.";
+        errorMessage = "Permissão da câmera negada. Verifique as configurações do navegador e permita o acesso à câmera.";
       } else if (error.name === 'NotFoundError') {
         errorMessage = "Câmera não encontrada neste dispositivo.";
       } else if (error.name === 'NotReadableError') {
         errorMessage = "Câmera está sendo usada por outro aplicativo.";
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage = "As configurações da câmera não são suportadas por este dispositivo.";
+      } else if (error.name === 'SecurityError') {
+        errorMessage = "Acesso à câmera bloqueado por questões de segurança. Certifique-se de que está usando HTTPS.";
       }
       
       toast.error(errorMessage);
@@ -70,21 +102,39 @@ export const OdometerCapture = ({ onOdometerCapture, initialKm = "" }: OdometerC
   };
 
   const capturePhoto = async () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !isStreaming) {
+      toast.error("Câmera não está ativa");
+      return;
+    }
 
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    
-    if (!context) return;
+    try {
+      console.log('Capturando foto...');
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      
+      if (!context) {
+        throw new Error('Não foi possível criar contexto do canvas');
+      }
 
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    
-    context.drawImage(videoRef.current, 0, 0);
-    
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-    setCapturedPhoto(dataUrl);
-    stopCamera();
+      // Wait for video to have dimensions
+      if (videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
+        toast.error("Aguarde a câmera carregar completamente");
+        return;
+      }
+
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      
+      context.drawImage(videoRef.current, 0, 0);
+      
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      console.log('Foto capturada com sucesso');
+      setCapturedPhoto(dataUrl);
+      stopCamera();
+    } catch (error) {
+      console.error('Erro ao capturar foto:', error);
+      toast.error("Erro ao capturar foto. Tente novamente.");
+    }
   };
 
   const retakePhoto = () => {
@@ -187,10 +237,15 @@ export const OdometerCapture = ({ onOdometerCapture, initialKm = "" }: OdometerC
                     Tire uma foto do odômetro para comprovar a quilometragem
                   </p>
                 </div>
-                <Button onClick={startCamera} className="btn-touch">
-                  <Camera className="h-4 w-4 mr-2" />
-                  Iniciar Câmera
-                </Button>
+                <div className="space-y-2">
+                  <Button onClick={startCamera} className="btn-touch w-full">
+                    <Camera className="h-4 w-4 mr-2" />
+                    Iniciar Câmera
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Certifique-se de permitir o acesso à câmera quando solicitado
+                  </p>
+                </div>
               </div>
             )}
 
