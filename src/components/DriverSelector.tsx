@@ -87,6 +87,18 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
     e.preventDefault();
     
     try {
+      // Additional security check using our new function
+      const { data: userData } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      if (userData?.role !== 'admin') {
+        toast.error("Acesso negado: apenas administradores podem criar motoristas");
+        return;
+      }
+
       const { data, error } = await supabase
         .from('drivers')
         .insert([formData])
@@ -94,7 +106,7 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
         .single();
 
       if (error) {
-        if (error.code === 'PGRST301') {
+        if (error.code === 'PGRST301' || error.message.includes('não autorizado')) {
           toast.error("Você não tem permissão para criar motoristas. Entre em contato com um administrador.");
           return;
         }

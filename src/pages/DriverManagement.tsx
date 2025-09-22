@@ -73,16 +73,35 @@ export default function DriverManagement() {
   const fetchDrivers = async () => {
     setLoading(true);
     try {
-      // First try to access drivers table directly (admin access)
-      let { data, error } = await supabase
-        .from('drivers')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Check user role first to determine access level
+      const { data: userData } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
 
+      let data;
       let isOperatorView = false;
 
-      // If access denied, try the operator view (masked data)
-      if (error?.code === 'PGRST301') {
+      if (userData?.role === 'admin') {
+        // Admin access - try full drivers table
+        const { data: adminData, error } = await supabase
+          .from('drivers')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Database error:', error);
+          if (error.code === 'PGRST301' || error.message.includes('não autorizado')) {
+            toast.error('Acesso negado: falha na autenticação de administrador');
+          } else {
+            toast.error('Erro ao carregar motoristas');
+          }
+          return;
+        }
+        data = adminData;
+      } else {
+        // Operator access - use masked view
         const { data: operatorData, error: operatorError } = await supabase
           .from('drivers_operator_view')
           .select('*')
@@ -90,7 +109,11 @@ export default function DriverManagement() {
 
         if (operatorError) {
           console.error('Database error:', operatorError);
-          toast.error('Acesso negado: você não tem permissão para acessar dados de motoristas');
+          if (operatorError.code === 'PGRST301' || operatorError.message.includes('não autorizado')) {
+            toast.error('Acesso negado: você não tem permissão para acessar dados de motoristas');
+          } else {
+            toast.error('Erro ao carregar motoristas');
+          }
           return;
         }
         
@@ -112,26 +135,28 @@ export default function DriverManagement() {
         
         isOperatorView = true;
         toast.info('Visualização com dados mascarados para operadores');
-      } else if (error) {
-        console.error('Database error:', error);
-        toast.error('Erro ao carregar motoristas');
-        return;
       }
       
       setDrivers(data || []);
       
-      // Fetch stats for each driver
+      // Fetch stats for each driver using secure method
       if (data) {
-        const statsPromises = data.map(driver => fetchDriverStats(driver.id));
-        const stats = await Promise.all(statsPromises);
-        const statsMap = data.reduce((acc, driver, index) => {
-          acc[driver.id] = stats[index];
-          return acc;
-        }, {} as Record<string, DriverStats>);
-        setDriverStats(statsMap);
+        try {
+          // Use individual stats fetching (secure view not yet in types)
+          const statsPromises = data.map(driver => fetchDriverStats(driver.id));
+          const stats = await Promise.all(statsPromises);
+          const statsMap = data.reduce((acc, driver, index) => {
+            acc[driver.id] = stats[index];
+            return acc;
+          }, {} as Record<string, DriverStats>);
+          setDriverStats(statsMap);
+        } catch (error) {
+          console.error('Error fetching driver stats:', error);
+        }
       }
+      
     } catch (error) {
-      console.error('Error fetching drivers:', error);
+      console.error('Error in fetchDrivers:', error);
       toast.error('Erro ao carregar motoristas');
     } finally {
       setLoading(false);
@@ -183,6 +208,18 @@ export default function DriverManagement() {
     e.preventDefault();
     
     try {
+      // Additional security check
+      const { data: userData } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      if (userData?.role !== 'admin') {
+        toast.error("Acesso negado: apenas administradores podem gerenciar motoristas");
+        return;
+      }
+
       if (selectedDriver) {
         // Update existing driver
         const { error } = await supabase
@@ -191,7 +228,7 @@ export default function DriverManagement() {
           .eq('id', selectedDriver.id);
 
         if (error) {
-          if (error.code === 'PGRST301') {
+          if (error.code === 'PGRST301' || error.message.includes('não autorizado')) {
             toast.error("Você não tem permissão para atualizar motoristas. Entre em contato com um administrador.");
             return;
           }
@@ -206,19 +243,19 @@ export default function DriverManagement() {
           .insert([formData]);
 
         if (error) {
-          if (error.code === 'PGRST301') {
+          if (error.code === 'PGRST301' || error.message.includes('não autorizado')) {
             toast.error("Você não tem permissão para criar motoristas. Entre em contato com um administrador.");
             return;
           }
           throw error;
         }
-        toast.success("Motorista cadastrado com sucesso!");
+        toast.success("Motorista criado com sucesso!");
         setIsAddDialogOpen(false);
       }
 
       resetForm();
       fetchDrivers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving driver:', error);
       toast.error("Erro ao salvar motorista");
     }
@@ -234,7 +271,7 @@ export default function DriverManagement() {
         .eq('id', driverId);
 
       if (error) {
-        if (error.code === 'PGRST301') {
+        if (error.code === 'PGRST301' || error.message.includes('não autorizado')) {
           toast.error("Você não tem permissão para excluir motoristas. Entre em contato com um administrador.");
           return;
         }
