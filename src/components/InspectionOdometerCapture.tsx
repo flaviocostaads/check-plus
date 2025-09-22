@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera, ChevronRight, ChevronLeft } from "lucide-react";
 import { OdometerCapture } from "@/components/OdometerCapture";
 
@@ -19,16 +17,21 @@ export default function InspectionOdometerCapture({ onNext, onBack }: Inspection
   const handleOdometerCapture = (km: string, photoUrl: string) => {
     setReading(km);
     setPhotoUrl(photoUrl);
+    // Automaticamente prosseguir após capturar
+    handleNext(km, photoUrl);
   };
 
-  const handleNext = async () => {
-    if (!reading || !photoUrl) {
+  const handleNext = async (km?: string, photo?: string) => {
+    const finalReading = km || reading;
+    const finalPhotoUrl = photo || photoUrl;
+    
+    if (!finalReading || !finalPhotoUrl) {
       return;
     }
     
     setLoading(true);
     try {
-      await onNext(reading, photoUrl);
+      await onNext(finalReading, finalPhotoUrl);
     } finally {
       setLoading(false);
     }
@@ -46,29 +49,16 @@ export default function InspectionOdometerCapture({ onNext, onBack }: Inspection
       </div>
 
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="reading" className="text-sm sm:text-base">Quilometragem Atual (KM)</Label>
-          <Input
-            id="reading"
-            type="number"
-            value={reading}
-            onChange={(e) => setReading(e.target.value)}
-            placeholder="Ex: 123456"
-            className="text-base sm:text-lg h-12 btn-touch"
-          />
-        </div>
-
         <div className="space-y-3">
-          <Label className="text-sm sm:text-base">Foto do Odômetro</Label>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+          <Label className="text-sm sm:text-base">Registro do Odômetro</Label>
+          <div className="flex flex-col items-center gap-3">
             <OdometerCapture 
               onOdometerCapture={handleOdometerCapture}
-              initialKm={reading}
             />
             {photoUrl && (
               <div className="text-sm text-success flex items-center gap-2">
                 <Camera className="h-4 w-4" />
-                Foto capturada com sucesso
+                Foto e quilometragem registradas com sucesso
               </div>
             )}
           </div>
@@ -79,6 +69,9 @@ export default function InspectionOdometerCapture({ onNext, onBack }: Inspection
                 alt="Odômetro" 
                 className="w-40 h-28 sm:w-32 sm:h-24 object-cover rounded-lg border mx-auto sm:mx-0"
               />
+              <div className="text-center mt-2">
+                <span className="text-sm font-medium">KM: {reading}</span>
+              </div>
             </div>
           )}
         </div>
@@ -89,14 +82,16 @@ export default function InspectionOdometerCapture({ onNext, onBack }: Inspection
           <ChevronLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>
-        <Button 
-          onClick={handleNext} 
-          disabled={!isFormValid || loading}
-          className="flex-1 bg-gradient-primary hover:opacity-90 btn-touch"
-        >
-          {loading ? "Salvando..." : "Continuar"}
-          <ChevronRight className="h-4 w-4 ml-2" />
-        </Button>
+        {isFormValid && (
+          <Button 
+            onClick={() => handleNext()} 
+            disabled={loading}
+            className="flex-1 bg-gradient-primary hover:opacity-90 btn-touch"
+          >
+            {loading ? "Salvando..." : "Continuar"}
+            <ChevronRight className="h-4 w-4 ml-2" />
+          </Button>
+        )}
       </div>
     </div>
   );
