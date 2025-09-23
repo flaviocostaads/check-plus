@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { ArrowLeft, Download, Printer, FileText, Filter, Calendar, Car } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -176,7 +177,7 @@ export const Reports = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <AuthenticatedLayout>
       <div className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -376,6 +377,6 @@ export const Reports = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 };

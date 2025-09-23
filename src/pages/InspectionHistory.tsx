@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { Eye, Download, Trash2, Car, Bike, Filter, Search, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -132,8 +133,8 @@ export const InspectionHistory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <AuthenticatedLayout>
+      <div className="max-w-7xl mx-auto space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/dashboard">
@@ -269,7 +270,7 @@ export const InspectionHistory = () => {
           </div>
         </Card>
       </div>
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

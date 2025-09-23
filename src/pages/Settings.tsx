@@ -8,11 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { 
   Settings as SettingsIcon, 
   Building, 
   Palette, 
-  Upload, 
+  Upload,
   Plug, 
   Save,
   Camera,
@@ -215,14 +216,17 @@ const Settings = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center py-8">Carregando configurações...</div>
-      </div>
+      <AuthenticatedLayout>
+        <div className="container mx-auto p-6">
+          <div className="text-center py-8">Carregando configurações...</div>
+        </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <AuthenticatedLayout>
+      <div className="container mx-auto p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="bg-gradient-to-r from-primary to-primary-glow p-2 rounded-xl">
           <SettingsIcon className="h-6 w-6 text-white" />
@@ -519,7 +523,8 @@ const Settings = () => {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AuthenticatedLayout>
   );
 };
 
