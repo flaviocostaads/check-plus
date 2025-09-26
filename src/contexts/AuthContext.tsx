@@ -42,43 +42,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('AuthContext: Initializing...');
-    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('AuthContext: Auth state changed:', event, session?.user?.email);
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('AuthContext: Fetching user profile...');
-          await fetchUserProfile(session.user.id, session.user);
+          // Use setTimeout to defer the async profile fetch
+          setTimeout(() => {
+            fetchUserProfile(session.user.id, session.user);
+          }, 0);
         } else {
-          console.log('AuthContext: No session, clearing profile');
           setUserProfile(null);
+          setLoading(false);
         }
-        
-        console.log('AuthContext: Setting loading to false');
-        setLoading(false);
       }
     );
 
     // Check for existing session
     const checkSession = async () => {
-      console.log('AuthContext: Checking existing session...');
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('AuthContext: Found session:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        console.log('AuthContext: Fetching user profile from existing session...');
         await fetchUserProfile(session.user.id, session.user);
+      } else {
+        setLoading(false);
       }
-      
-      console.log('AuthContext: Initial check complete, setting loading to false');
-      setLoading(false);
     };
 
     checkSession();
@@ -88,8 +80,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const fetchUserProfile = async (userId: string, currentUser: SupabaseUser) => {
     try {
-      console.log('AuthContext: Fetching profile for user:', userId);
-      
       // First try to get the profile directly
       const { data, error } = await supabase
         .from('profiles')
@@ -97,18 +87,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .eq('user_id', userId)
         .maybeSingle();
 
-      console.log('AuthContext: Profile query result:', { data, error });
-
       if (error) {
         console.error('Error fetching user profile:', error);
+        // Create a fallback profile to prevent infinite loading
+        setUserProfile({
+          id: userId,
+          user_id: userId,
+          email: currentUser?.email || '',
+          name: currentUser?.user_metadata?.name || currentUser?.email || '',
+          role: (currentUser?.user_metadata?.role as 'admin' | 'operator') || 'admin',
+          created_at: new Date().toISOString()
+        });
         return;
       }
 
       if (data) {
-        console.log('AuthContext: Profile found:', data.email, data.role);
         setUserProfile(data);
       } else {
-        console.log('AuthContext: No profile found, creating new one...');
         // Create profile using the user's metadata role or default to admin
         const userRole = currentUser?.user_metadata?.role || 'admin';
         const userName = currentUser?.user_metadata?.name || currentUser?.email || '';
@@ -124,8 +119,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           .select()
           .single();
 
-        console.log('AuthContext: Insert result:', { newProfile, insertError });
-
         if (insertError) {
           console.error('Error creating user profile:', insertError);
           // Even if creation fails, we can still create a temporary profile
@@ -138,7 +131,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             created_at: new Date().toISOString()
           });
         } else {
-          console.log('AuthContext: Created new profile:', newProfile?.email, newProfile?.role);
           setUserProfile(newProfile);
         }
       }
@@ -153,6 +145,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         role: (currentUser?.user_metadata?.role as 'admin' | 'operator') || 'admin',
         created_at: new Date().toISOString()
       });
+    } finally {
+      // Always set loading to false after attempting to fetch profile
+      setLoading(false);
     }
   };
 
