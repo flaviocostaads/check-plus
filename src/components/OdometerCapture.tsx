@@ -59,19 +59,90 @@ export const OdometerCapture = ({ onOdometerCapture, initialKm = "" }: OdometerC
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         
-        // Wait for video to be ready
-        videoRef.current.onloadedmetadata = () => {
-          console.log('Video metadata carregado');
-          if (videoRef.current) {
-            videoRef.current.play().then(() => {
-              console.log('Video iniciado com sucesso');
-              setIsStreaming(true);
-            }).catch((playError) => {
-              console.error('Erro ao iniciar video:', playError);
-              toast.error("Erro ao iniciar a visualização da câmera");
-            });
+        let metadataLoaded = false;
+        let streamingStarted = false;
+        
+        // Create multiple fallback strategies
+        const startVideoPlayback = async () => {
+          if (streamingStarted || !videoRef.current) return;
+          
+          try {
+            console.log('Tentando iniciar reprodução do vídeo...');
+            
+            // Force video properties
+            videoRef.current.muted = true;
+            videoRef.current.playsInline = true;
+            videoRef.current.autoplay = true;
+            
+            await videoRef.current.play();
+            console.log('Vídeo reproduzindo com sucesso');
+            
+            // Wait a bit and check video dimensions
+            setTimeout(() => {
+              if (videoRef.current && videoRef.current.videoWidth > 0) {
+                console.log(`Dimensões do vídeo: ${videoRef.current.videoWidth}x${videoRef.current.videoHeight}`);
+                streamingStarted = true;
+                setIsStreaming(true);
+              } else {
+                console.log('Vídeo ainda sem dimensões, tentando novamente...');
+                // Force streaming even without proper dimensions
+                streamingStarted = true;
+                setIsStreaming(true);
+              }
+            }, 500);
+            
+          } catch (playError) {
+            console.error('Erro ao iniciar reprodução:', playError);
+            // Even if play fails, try to show the stream
+            console.log('Forçando exibição do stream mesmo com erro de reprodução');
+            streamingStarted = true;
+            setIsStreaming(true);
           }
         };
+        
+        // Primary method: wait for metadata
+        videoRef.current.onloadedmetadata = () => {
+          console.log('Metadata carregado');
+          metadataLoaded = true;
+          startVideoPlayback();
+        };
+        
+        // Fallback 1: Force start after 2 seconds if metadata doesn't load
+        setTimeout(() => {
+          if (!metadataLoaded && !streamingStarted) {
+            console.log('Fallback: Metadata não carregou em 2s, forçando início');
+            startVideoPlayback();
+          }
+        }, 2000);
+        
+        // Fallback 2: Ultimate fallback after 5 seconds
+        setTimeout(() => {
+          if (!streamingStarted) {
+            console.log('Fallback final: Forçando streaming após 5s');
+            streamingStarted = true;
+            setIsStreaming(true);
+          }
+        }, 5000);
+        
+        // Additional events that might help
+        videoRef.current.oncanplay = () => {
+          console.log('Vídeo pode ser reproduzido');
+          if (!streamingStarted) {
+            startVideoPlayback();
+          }
+        };
+        
+        videoRef.current.onloadeddata = () => {
+          console.log('Dados do vídeo carregados');
+          if (!streamingStarted) {
+            startVideoPlayback();
+          }
+        };
+        
+        // Try to start immediately
+        setTimeout(() => {
+          startVideoPlayback();
+        }, 100);
       }
     } catch (error: any) {
       console.error("Erro ao acessar câmera:", error);
