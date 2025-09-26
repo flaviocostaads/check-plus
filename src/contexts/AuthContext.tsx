@@ -89,13 +89,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const fetchUserProfile = async (userId: string, currentUser: SupabaseUser) => {
     try {
       console.log('AuthContext: Fetching profile for user:', userId);
+      
+      // First try to get the profile directly
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      console.log('AuthContext: Profile query result:', { data, error });
+
+      if (error) {
         console.error('Error fetching user profile:', error);
         return;
       }
@@ -105,27 +109,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUserProfile(data);
       } else {
         console.log('AuthContext: No profile found, creating new one...');
-        // Create default admin profile for new users
+        // Create profile using the user's metadata role or default to admin
+        const userRole = currentUser?.user_metadata?.role || 'admin';
+        const userName = currentUser?.user_metadata?.name || currentUser?.email || '';
+        
         const { data: newProfile, error: insertError } = await supabase
           .from('profiles')
           .insert([{
             user_id: userId,
             email: currentUser?.email || '',
-            name: currentUser?.email || '',
-            role: 'admin'
+            name: userName,
+            role: userRole
           }])
           .select()
           .single();
 
+        console.log('AuthContext: Insert result:', { newProfile, insertError });
+
         if (insertError) {
           console.error('Error creating user profile:', insertError);
+          // Even if creation fails, we can still create a temporary profile
+          setUserProfile({
+            id: userId,
+            user_id: userId,
+            email: currentUser?.email || '',
+            name: userName,
+            role: userRole as 'admin' | 'operator',
+            created_at: new Date().toISOString()
+          });
         } else {
-          console.log('AuthContext: Created new profile:', newProfile.email, newProfile.role);
+          console.log('AuthContext: Created new profile:', newProfile?.email, newProfile?.role);
           setUserProfile(newProfile);
         }
       }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error in fetchUserProfile:', error);
+      // Create a fallback profile to prevent infinite loading
+      setUserProfile({
+        id: userId,
+        user_id: userId,
+        email: currentUser?.email || '',
+        name: currentUser?.user_metadata?.name || currentUser?.email || '',
+        role: (currentUser?.user_metadata?.role as 'admin' | 'operator') || 'admin',
+        created_at: new Date().toISOString()
+      });
     }
   };
 
