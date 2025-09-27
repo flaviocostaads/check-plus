@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Camera, ChevronRight, ChevronLeft } from "lucide-react";
-import { OdometerCapture } from "@/components/OdometerCapture";
+import { Input } from "@/components/ui/input";
+import { ChevronRight, ChevronLeft, Gauge } from "lucide-react";
 
 interface InspectionOdometerCaptureProps {
   onNext: (reading: string, photoUrl: string) => Promise<void>;
@@ -11,69 +11,54 @@ interface InspectionOdometerCaptureProps {
 
 export default function InspectionOdometerCapture({ onNext, onBack }: InspectionOdometerCaptureProps) {
   const [reading, setReading] = useState("");
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleOdometerCapture = (km: string, photoUrl: string) => {
-    setReading(km);
-    setPhotoUrl(photoUrl);
-    // Automaticamente prosseguir após capturar
-    handleNext(km, photoUrl);
-  };
-
-  const handleNext = async (km?: string, photo?: string) => {
-    const finalReading = km || reading;
-    const finalPhotoUrl = photo || photoUrl;
-    
-    if (!finalReading || !finalPhotoUrl) {
+  const handleNext = async () => {
+    if (!reading.trim()) {
       return;
     }
     
     setLoading(true);
     try {
-      await onNext(finalReading, finalPhotoUrl);
+      // Usando uma URL placeholder para a foto (temporariamente removida)
+      await onNext(reading, "placeholder-photo-url");
     } finally {
       setLoading(false);
     }
   };
 
-  const isFormValid = reading.trim() !== "" && photoUrl !== null;
+  const isFormValid = reading.trim() !== "";
 
   return (
     <div className="space-y-4 sm:space-y-6 px-4 sm:px-0">
       <div className="text-center">
         <h3 className="text-base sm:text-lg font-semibold mb-2">Registrar Quilometragem</h3>
         <p className="text-sm sm:text-base text-muted-foreground px-2">
-          Informe a quilometragem atual do veículo e tire uma foto do odômetro para comprovação.
+          Informe a quilometragem atual do veículo.
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-3">
-          <Label className="text-sm sm:text-base">Registro do Odômetro</Label>
+          <Label htmlFor="odometer" className="text-sm sm:text-base">Quilometragem Atual (KM)</Label>
           <div className="flex flex-col items-center gap-3">
-            <OdometerCapture 
-              onOdometerCapture={handleOdometerCapture}
-            />
-            {photoUrl && (
+            <div className="w-full max-w-sm">
+              <Input
+                id="odometer"
+                type="number"
+                value={reading}
+                onChange={(e) => setReading(e.target.value)}
+                placeholder="Ex: 123456"
+                className="h-12 btn-touch text-base text-center"
+              />
+            </div>
+            {reading && (
               <div className="text-sm text-success flex items-center gap-2">
-                <Camera className="h-4 w-4" />
-                Foto e quilometragem registradas com sucesso
+                <Gauge className="h-4 w-4" />
+                Quilometragem informada: {reading} KM
               </div>
             )}
           </div>
-          {photoUrl && (
-            <div className="mt-3">
-              <img 
-                src={photoUrl} 
-                alt="Odômetro" 
-                className="w-40 h-28 sm:w-32 sm:h-24 object-cover rounded-lg border mx-auto sm:mx-0"
-              />
-              <div className="text-center mt-2">
-                <span className="text-sm font-medium">KM: {reading}</span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -84,7 +69,7 @@ export default function InspectionOdometerCapture({ onNext, onBack }: Inspection
         </Button>
         {isFormValid && (
           <Button 
-            onClick={() => handleNext()} 
+            onClick={handleNext} 
             disabled={loading}
             className="flex-1 bg-gradient-primary hover:opacity-90 btn-touch"
           >
