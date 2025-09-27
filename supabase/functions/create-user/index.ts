@@ -150,14 +150,17 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Create profile
+    // Create profile (use upsert to handle potential duplicates)
     const { error: profileInsertError } = await supabaseAdmin
       .from('profiles')
-      .insert({
+      .upsert({
         user_id: authData.user.id,
         email,
         name,
         role
+      }, { 
+        onConflict: 'user_id',
+        ignoreDuplicates: false 
       })
 
     if (profileInsertError) {

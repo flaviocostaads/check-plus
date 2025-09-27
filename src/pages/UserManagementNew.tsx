@@ -127,8 +127,9 @@ export default function UserManagementNew() {
         toast.success('Usuário criado com sucesso');
       }
 
-      fetchUsers();
+      // Close dialog and refresh list after successful operation
       handleDialogClose();
+      fetchUsers();
     } catch (error: any) {
       console.error('Error managing user:', error);
       toast.error(error.message || 'Erro ao gerenciar usuário');
@@ -214,7 +215,9 @@ export default function UserManagementNew() {
 
   const handleDialogClose = () => {
     setDialogOpen(false);
-    resetForm();
+    setTimeout(() => {
+      resetForm();
+    }, 100); // Small delay to ensure dialog closes smoothly
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -306,7 +309,13 @@ export default function UserManagementNew() {
             </div>
           </div>
 
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={(open) => {
+            if (!open) {
+              handleDialogClose();
+            } else {
+              setDialogOpen(true);
+            }
+          }}>
             <DialogTrigger asChild>
               <Button onClick={resetForm} className="bg-gradient-primary hover:opacity-90">
                 <Plus className="h-4 w-4 mr-2" />

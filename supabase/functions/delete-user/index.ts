@@ -60,8 +60,8 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Check user role - only admins can delete users
-    const { data: profile, error: userProfileError } = await supabaseAnon
+    // Check user role - only admins can delete users (using admin client to bypass RLS)
+    const { data: profile, error: userProfileError } = await supabaseAdmin
       .from('profiles')
       .select('role')
       .eq('user_id', user.id)
