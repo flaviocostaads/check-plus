@@ -639,7 +639,7 @@ export type Database = {
     }
     Enums: {
       inspection_status: "ok" | "needs_replacement" | "observation"
-      user_role: "admin" | "operator"
+      user_role: "admin" | "operator" | "supervisor" | "inspector"
       vehicle_type: "car" | "moto"
     }
     CompositeTypes: {
@@ -769,7 +769,7 @@ export const Constants = {
   public: {
     Enums: {
       inspection_status: ["ok", "needs_replacement", "observation"],
-      user_role: ["admin", "operator"],
+      user_role: ["admin", "operator", "supervisor", "inspector"],
       vehicle_type: ["car", "moto"],
     },
   },
