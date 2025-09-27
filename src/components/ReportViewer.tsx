@@ -269,6 +269,22 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
                 <div className="text-center text-xs sm:text-sm text-muted-foreground space-y-1">
                   <p>Data: {format(new Date(inspection.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}</p>
                   <p>ID: {inspection.id.slice(0, 8)}</p>
+                  <div className="flex justify-center gap-2 mt-2">
+                    {(() => {
+                      const issues = inspection.inspection_items?.filter(item => 
+                        item.status === 'needs_replacement' || item.status === 'observation'
+                      ).length || 0;
+                      return issues > 0 ? (
+                        <Badge variant={issues <= 2 ? "secondary" : "destructive"}>
+                          {issues} problema{issues > 1 ? 's' : ''} encontrado{issues > 1 ? 's' : ''}
+                        </Badge>
+                      ) : (
+                        <Badge variant="default" className="bg-green-100 text-green-800">
+                          Nenhum problema encontrado
+                        </Badge>
+                      );
+                    })()}
+                  </div>
                 </div>
               </CardHeader>
             </Card>
@@ -301,6 +317,12 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
                 <div>
                   <p className="text-sm font-medium">Renavam:</p>
                   <p className="text-sm text-muted-foreground">{inspection.vehicles.renavam}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Tipo:</p>
+                  <p className="text-sm text-muted-foreground">
+                    {inspection.vehicles.vehicle_type === "car" ? "Carro" : "Moto"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm font-medium">KM Atual:</p>

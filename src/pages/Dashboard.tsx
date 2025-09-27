@@ -31,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import ReportViewer from "@/components/ReportViewer";
 
 interface DashboardProps {
   onNewInspection?: () => void;  
@@ -374,9 +375,11 @@ const Dashboard = ({
                             </Badge>
                             
                             <div className="flex gap-1">
-                              <Button variant="ghost" size="sm" title="Ver detalhes" onClick={() => navigate('/history')}>
-                                <ArrowRight className="h-4 w-4" />
-                              </Button>
+                              <ReportViewer reportId={inspection.id}>
+                                <Button variant="ghost" size="sm" title="Ver detalhes">
+                                  <ArrowRight className="h-4 w-4" />
+                                </Button>
+                              </ReportViewer>
                             </div>
                           </div>
                         </div>

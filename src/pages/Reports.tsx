@@ -469,15 +469,15 @@ export const Reports = () => {
                             <TableCell>
                               <Badge variant="outline">{report.vehicle?.placa}</Badge>
                             </TableCell>
-                            <TableCell>
-                              <Badge variant={report.vehicle?.vehicle_type === "carro" ? "default" : "secondary"}>
-                                {report.vehicle?.vehicle_type === "carro" ? (
-                                  <><Car className="h-3 w-3 mr-1" />Carro</>
-                                ) : (
-                                  <>Moto</>
-                                )}
-                              </Badge>
-                            </TableCell>
+                             <TableCell>
+                               <Badge variant={report.vehicle?.vehicle_type === "car" ? "default" : "secondary"}>
+                                 {report.vehicle?.vehicle_type === "car" ? (
+                                   <><Car className="h-3 w-3 mr-1" />Carro</>
+                                 ) : (
+                                   <>Moto</>
+                                 )}
+                               </Badge>
+                             </TableCell>
                             <TableCell>
                               {report.vehicle?.cidade && report.vehicle?.estado 
                                 ? `${report.vehicle.cidade}/${report.vehicle.estado}`

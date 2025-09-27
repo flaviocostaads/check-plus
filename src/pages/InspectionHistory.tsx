@@ -262,12 +262,12 @@ export const InspectionHistory = () => {
                               {formatDate(inspection.created_at)}
                             </p>
                           </div>
-                          <Badge variant={inspection.vehicles.vehicle_type === "carro" ? "default" : "secondary"}>
-                            {inspection.vehicles.vehicle_type === "carro" ? (
-                              <><Car className="h-3 w-3 mr-1" />Carro</>
-                            ) : (
-                              <><Bike className="h-3 w-3 mr-1" />Moto</>
-                            )}
+                           <Badge variant={inspection.vehicles.vehicle_type === "car" ? "default" : "secondary"}>
+                             {inspection.vehicles.vehicle_type === "car" ? (
+                               <><Car className="h-3 w-3 mr-1" />Carro</>
+                             ) : (
+                               <><Bike className="h-3 w-3 mr-1" />Moto</>
+                             )}
                           </Badge>
                         </div>
                         
@@ -337,13 +337,13 @@ export const InspectionHistory = () => {
                             <Badge variant="outline">{inspection.vehicles.placa}</Badge>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={inspection.vehicles.vehicle_type === "carro" ? "default" : "secondary"}>
-                              {inspection.vehicles.vehicle_type === "carro" ? (
-                                <><Car className="h-3 w-3 mr-1" />Carro</>
-                              ) : (
-                                <><Bike className="h-3 w-3 mr-1" />Moto</>
-                              )}
-                            </Badge>
+                             <Badge variant={inspection.vehicles.vehicle_type === "car" ? "default" : "secondary"}>
+                               {inspection.vehicles.vehicle_type === "car" ? (
+                                 <><Car className="h-3 w-3 mr-1" />Carro</>
+                               ) : (
+                                 <><Bike className="h-3 w-3 mr-1" />Moto</>
+                               )}
+                             </Badge>
                           </TableCell>
                           <TableCell>{inspection.driver_name}</TableCell>
                           <TableCell>{inspection.driver_cpf}</TableCell>
