@@ -23,32 +23,46 @@ export default function ReportGenerator({ inspection, onShare }: ReportGenerator
       
       // Add NSA logo
       const img = new Image();
-      img.onload = () => {
-        // Company header with logo
-        pdf.addImage(img, 'JPEG', 20, 10, 40, 20);
+      img.onload = async () => {
+        // Header with background
+        pdf.setFillColor(41, 128, 185); // Professional blue
+        pdf.rect(0, 0, 210, 35, 'F');
         
-        pdf.setFontSize(16);
+        // Company logo
+        pdf.addImage(img, 'JPEG', 15, 8, 25, 18);
+        
+        // Company header
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(14);
         pdf.setFont(undefined, 'bold');
-        pdf.text('NORTE SECURITY ADVANCED LTDA', 70, 20);
+        pdf.text('NORTE SECURITY ADVANCED LTDA', 45, 16);
         
-        pdf.setFontSize(10);
+        pdf.setFontSize(8);
         pdf.setFont(undefined, 'normal');
-        pdf.text('CNPJ: 41.537.956/0001-04', 70, 27);
-        pdf.text('Quadra Aço 90 (901 Sul) Alameda 17, SN - Sala 02 Quadra06 Lote 03', 70, 32);
-        pdf.text('Plano Diretor Sul - Palmas/TO - CEP: 77017-266', 70, 37);
+        pdf.text('CNPJ: 41.537.956/0001-04', 45, 22);
+        pdf.text('Quadra Aço 90 (901 Sul) Alameda 17, SN - Sala 02', 45, 26);
+        pdf.text('Plano Diretor Sul - Palmas/TO - CEP: 77017-266', 45, 30);
         
-        // Title
-        pdf.setFontSize(18);
+        // Reset text color
+        pdf.setTextColor(0, 0, 0);
+        
+        // Title with decorative line
+        pdf.setFontSize(20);
         pdf.setFont(undefined, 'bold');
         pdf.text('RELATÓRIO DE INSPEÇÃO VEICULAR', 20, 50);
         
-        pdf.setFontSize(12);
+        pdf.setLineWidth(2);
+        pdf.setDrawColor(41, 128, 185);
+        pdf.line(20, 55, 190, 55);
+        
+        // Date and ID info
+        pdf.setFontSize(10);
         pdf.setFont(undefined, 'normal');
-        pdf.text(`Data: ${inspection.createdAt.toLocaleDateString('pt-BR')} às ${inspection.createdAt.toLocaleTimeString('pt-BR')}`, 20, 60);
-        pdf.text(`ID: ${inspection.id.slice(0, 8)}`, 120, 60);
+        pdf.text(`Data: ${inspection.createdAt.toLocaleDateString('pt-BR')} às ${inspection.createdAt.toLocaleTimeString('pt-BR')}`, 20, 65);
+        pdf.text(`ID da Inspeção: ${inspection.id.slice(0, 8)}`, 120, 65);
         
         // Continue with rest of PDF generation
-        generatePDFContent(pdf);
+        await generatePDFContent(pdf);
       };
       img.src = nsaLogo;
     } catch (error) {
@@ -58,35 +72,44 @@ export default function ReportGenerator({ inspection, onShare }: ReportGenerator
     }
   };
 
-  const generatePDFContent = (pdf: jsPDF) => {
+  const generatePDFContent = async (pdf: jsPDF) => {
     try {
-      // Vehicle info section
+      // Vehicle info section with background
+      pdf.setFillColor(245, 245, 245);
+      pdf.rect(15, 72, 180, 30, 'F');
+      
       pdf.setFontSize(14);
       pdf.setFont(undefined, 'bold');
-      pdf.text('DADOS DO VEÍCULO', 20, 75);
+      pdf.setTextColor(41, 128, 185);
+      pdf.text('DADOS DO VEÍCULO', 20, 82);
       
+      pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(10);
       pdf.setFont(undefined, 'normal');
-      pdf.text(`Marca/Modelo: ${inspection.vehicleData.marca_modelo}`, 20, 85);
-      pdf.text(`Placa: ${inspection.vehicleData.placa}`, 20, 92);
-      pdf.text(`Cor: ${inspection.vehicleData.cor}`, 100, 85);
-      pdf.text(`Ano: ${inspection.vehicleData.ano}`, 100, 92);
-      pdf.text(`Renavam: ${inspection.vehicleData.renavam}`, 20, 99);
-      pdf.text(`KM Atual: ${inspection.vehicleData.km_atual}`, 100, 99);
+      pdf.text(`Marca/Modelo: ${inspection.vehicleData.marca_modelo}`, 20, 90);
+      pdf.text(`Cor: ${inspection.vehicleData.cor}`, 110, 90);
+      pdf.text(`Placa: ${inspection.vehicleData.placa}`, 20, 96);
+      pdf.text(`Ano: ${inspection.vehicleData.ano}`, 110, 96);
+      
       // Driver info section
+      pdf.setFillColor(245, 245, 245);
+      pdf.rect(15, 108, 180, 25, 'F');
+      
       pdf.setFontSize(14);
       pdf.setFont(undefined, 'bold');
-      pdf.text('DADOS DO CONDUTOR', 20, 115);
+      pdf.setTextColor(41, 128, 185);
+      pdf.text('DADOS DO CONDUTOR', 20, 118);
       
+      pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(10);
       pdf.setFont(undefined, 'normal');
-      pdf.text(`Nome Completo: ${inspection.driverData.nome_completo}`, 20, 125);
-      pdf.text(`CPF: ${inspection.driverData.cpf}`, 20, 132);
-      pdf.text(`CNH: ${inspection.driverData.cnh_numero}`, 100, 125);
-      pdf.text(`Validade CNH: ${inspection.driverData.cnh_validade}`, 100, 132);
-      // Summary section
+      pdf.text(`Nome Completo: ${inspection.driverData.nome_completo}`, 20, 126);
+      pdf.text(`CNH: ${inspection.driverData.cnh_numero}`, 110, 126);
+      
+      // Summary section with colored boxes
       pdf.setFontSize(14);
       pdf.setFont(undefined, 'bold');
+      pdf.setTextColor(41, 128, 185);
       pdf.text('RESUMO DA INSPEÇÃO', 20, 150);
       
       const summary = {
@@ -95,86 +118,219 @@ export default function ReportGenerator({ inspection, onShare }: ReportGenerator
         observation: inspection.checklistItems.filter(i => i.status === 'observation').length
       };
       
-      pdf.setFontSize(12);
-      pdf.setFont(undefined, 'normal');
-      pdf.text(`✓ Itens OK: ${summary.ok}`, 30, 162);
-      pdf.text(`⚠ Trocar: ${summary.needs_replacement}`, 80, 162);
-      pdf.text(`👁 Observar: ${summary.observation}`, 130, 162);
+      // OK items box
+      pdf.setFillColor(46, 204, 113);
+      pdf.rect(25, 155, 45, 20, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(16);
+      pdf.setFont(undefined, 'bold');
+      pdf.text(`${summary.ok}`, 47, 167);
+      pdf.setFontSize(8);
+      pdf.text('ITENS OK', 40, 172);
+      
+      // Needs replacement box
+      pdf.setFillColor(231, 76, 60);
+      pdf.rect(80, 155, 45, 20, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(16);
+      pdf.setFont(undefined, 'bold');
+      pdf.text(`${summary.needs_replacement}`, 102, 167);
+      pdf.setFontSize(8);
+      pdf.text('TROCAR', 95, 172);
+      
+      // Observation box
+      pdf.setFillColor(241, 196, 15);
+      pdf.rect(135, 155, 45, 20, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(16);
+      pdf.setFont(undefined, 'bold');
+      pdf.text(`${summary.observation}`, 157, 167);
+      pdf.setFontSize(8);
+      pdf.text('OBSERVAR', 147, 172);
+      
+      // Reset text color
+      pdf.setTextColor(0, 0, 0);
       
       // Checklist items
       pdf.setFontSize(14);
       pdf.setFont(undefined, 'bold');
-      pdf.text('ITENS VERIFICADOS DETALHADAMENTE', 20, 180);
+      pdf.setTextColor(41, 128, 185);
+      pdf.text('ITENS VERIFICADOS DETALHADAMENTE', 20, 190);
       
-      let yPosition = 190;
-      inspection.checklistItems.forEach((item, index) => {
-        if (yPosition > 260) {
+      pdf.setTextColor(0, 0, 0);
+      let yPosition = 200;
+      
+      for (let i = 0; i < inspection.checklistItems.length; i++) {
+        const item = inspection.checklistItems[i];
+        
+        if (yPosition > 250) {
           pdf.addPage();
-          yPosition = 20;
+          yPosition = 30;
         }
         
-        pdf.setFontSize(11);
-        pdf.setFont(undefined, 'bold');
-        const status = item.status === 'ok' ? 'OK ✓' : 
-                      item.status === 'needs_replacement' ? 'TROCAR ⚠' : 
-                      item.status === 'observation' ? 'OBSERVAR 👁' : 'N/A';
+        // Item background
+        const bgColor = item.status === 'ok' ? [232, 245, 233] : 
+                       item.status === 'needs_replacement' ? [255, 235, 238] : 
+                       item.status === 'observation' ? [255, 248, 225] : [245, 245, 245];
         
-        pdf.text(`${index + 1}. ${item.name}`, 20, yPosition);
-        pdf.text(`Status: ${status}`, 140, yPosition);
+        pdf.setFillColor(bgColor[0], bgColor[1], bgColor[2]);
+        pdf.rect(15, yPosition - 5, 180, 15, 'F');
+        
+        // Status indicator
+        const statusColor = item.status === 'ok' ? [46, 204, 113] : 
+                           item.status === 'needs_replacement' ? [231, 76, 60] : 
+                           item.status === 'observation' ? [241, 196, 15] : [128, 128, 128];
+        
+        pdf.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
+        pdf.rect(15, yPosition - 5, 5, 15, 'F');
+        
+        pdf.setFontSize(10);
+        pdf.setFont(undefined, 'bold');
+        pdf.text(`${i + 1}. ${item.name}`, 25, yPosition);
+        
+        const statusText = item.status === 'ok' ? 'OK ✓' : 
+                          item.status === 'needs_replacement' ? 'TROCAR ⚠' : 
+                          item.status === 'observation' ? 'OBSERVAR 👁' : 'N/A';
+        
+        pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+        pdf.text(statusText, 155, yPosition);
+        pdf.setTextColor(0, 0, 0);
+        
+        yPosition += 8;
         
         if (item.observations) {
-          yPosition += 7;
           pdf.setFontSize(9);
           pdf.setFont(undefined, 'normal');
-          const maxWidth = 170;
-          const splitObs = pdf.splitTextToSize(`Observações: ${item.observations}`, maxWidth);
+          pdf.setTextColor(100, 100, 100);
+          const maxWidth = 165;
+          const splitObs = pdf.splitTextToSize(`Obs: ${item.observations}`, maxWidth);
           pdf.text(splitObs, 25, yPosition);
           yPosition += splitObs.length * 4;
+          pdf.setTextColor(0, 0, 0);
         }
         
+        // Add photos if they exist
         if (item.photos && item.photos.length > 0) {
           yPosition += 5;
-          pdf.setFontSize(8);
-          pdf.setFont(undefined, 'italic');
-          pdf.text(`Fotos anexadas: ${item.photos.length} foto(s)`, 25, yPosition);
+          
+          for (let j = 0; j < item.photos.length; j++) {
+            const photo = item.photos[j];
+            
+            try {
+              if (yPosition > 220) {
+                pdf.addPage();
+                yPosition = 30;
+              }
+              
+              // Create image element to load the photo
+              const photoImg = new Image();
+              photoImg.crossOrigin = "anonymous";
+              
+              await new Promise((resolve, reject) => {
+                photoImg.onload = () => {
+                  try {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Calculate dimensions maintaining aspect ratio
+                    const maxWidth = 80;
+                    const maxHeight = 60;
+                    
+                    let { width, height } = photoImg;
+                    const aspectRatio = width / height;
+                    
+                    if (width > maxWidth) {
+                      width = maxWidth;
+                      height = width / aspectRatio;
+                    }
+                    if (height > maxHeight) {
+                      height = maxHeight;
+                      width = height * aspectRatio;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(photoImg, 0, 0, width, height);
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    pdf.addImage(dataUrl, 'JPEG', 25, yPosition, width, height);
+                    
+                    pdf.setFontSize(8);
+                    pdf.setFont(undefined, 'italic');
+                    pdf.setTextColor(100, 100, 100);
+                    pdf.text(`Foto ${j + 1}/${item.photos.length}`, 25, yPosition + height + 5);
+                    pdf.setTextColor(0, 0, 0);
+                    
+                    resolve(null);
+                  } catch (err) {
+                    resolve(null); // Continue even if image fails
+                  }
+                };
+                photoImg.onerror = () => resolve(null); // Continue even if image fails to load
+                photoImg.src = photo;
+              });
+              
+              yPosition += 70; // Space for image + caption
+            } catch (err) {
+              // If image loading fails, just show text
+              pdf.setFontSize(8);
+              pdf.setFont(undefined, 'italic');
+              pdf.setTextColor(150, 150, 150);
+              pdf.text(`[Foto ${j + 1}: Não foi possível carregar]`, 25, yPosition);
+              pdf.setTextColor(0, 0, 0);
+              yPosition += 8;
+            }
+          }
         }
         
-        yPosition += 12;
-      });
-      // Signature area
-      if (yPosition > 230) {
-        pdf.addPage();
-        yPosition = 20;
+        yPosition += 10;
       }
       
-      yPosition += 20;
+      // Signature area
+      if (yPosition > 220) {
+        pdf.addPage();
+        yPosition = 30;
+      } else {
+        yPosition += 20;
+      }
+      
+      pdf.setFillColor(245, 245, 245);
+      pdf.rect(15, yPosition, 180, 50, 'F');
       
       pdf.setFontSize(12);
       pdf.setFont(undefined, 'bold');
-      pdf.text('ASSINATURA E RESPONSABILIDADE', 20, yPosition);
+      pdf.setTextColor(41, 128, 185);
+      pdf.text('ASSINATURA E RESPONSABILIDADE', 20, yPosition + 10);
       
-      yPosition += 15;
-      pdf.setFontSize(10);
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(9);
       pdf.setFont(undefined, 'normal');
-      pdf.text('Declaro que as informações contidas neste relatório são verdadeiras e que o veículo', 20, yPosition);
-      pdf.text('foi inspecionado conforme os padrões de segurança estabelecidos.', 20, yPosition + 7);
+      pdf.text('Declaro que as informações contidas neste relatório são verdadeiras e que', 20, yPosition + 20);
+      pdf.text('o veículo foi inspecionado conforme os padrões de segurança estabelecidos.', 20, yPosition + 25);
       
-      yPosition += 25;
-      pdf.line(20, yPosition, 100, yPosition);
-      pdf.text('Assinatura do Motorista', 20, yPosition + 7);
-      pdf.text(inspection.driverData.nome_completo, 20, yPosition + 15);
+      // Signature lines
+      yPosition += 35;
+      pdf.setLineWidth(0.5);
+      pdf.setDrawColor(100, 100, 100);
+      pdf.line(20, yPosition, 90, yPosition);
+      pdf.line(105, yPosition, 175, yPosition);
       
-      pdf.line(120, yPosition, 190, yPosition);
-      pdf.text('Assinatura do Inspetor', 120, yPosition + 7);
-      pdf.text('NSA - Norte Security Advanced', 120, yPosition + 15);
-      
-      yPosition += 25;
       pdf.setFontSize(8);
+      pdf.text('Assinatura do Motorista', 20, yPosition + 5);
+      pdf.text('Assinatura do Inspetor', 105, yPosition + 5);
+      
+      pdf.setFont(undefined, 'bold');
+      pdf.text(inspection.driverData.nome_completo, 20, yPosition + 10);
+      pdf.text('NSA - Norte Security Advanced', 105, yPosition + 10);
+      
+      // Footer
+      pdf.setFontSize(7);
       pdf.setFont(undefined, 'italic');
-      pdf.text(`Relatório gerado automaticamente em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 20, yPosition);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Relatório gerado automaticamente em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 20, yPosition + 20);
       
       // Save PDF
-      const fileName = `NSA_Inspecao_${inspection.vehicleData.placa}_${inspection.createdAt.toLocaleDateString('pt-BR').replace(/\//g, '')}.pdf`;
+      const fileName = `NSA_Inspecao_${inspection.vehicleData.placa}_${inspection.createdAt.toLocaleDateString('pt-BR').replace(/\//g, '')}_${Math.floor(Math.random() * 1000)}.pdf`;
       pdf.save(fileName);
       
       toast.success('Relatório PDF gerado com sucesso!');
