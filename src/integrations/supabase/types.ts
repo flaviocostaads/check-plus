@@ -442,6 +442,69 @@ export type Database = {
         }
         Relationships: []
       }
+      sensitive_access_sessions: {
+        Row: {
+          access_level: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          justification: string | null
+          session_token: string
+          user_id: string
+        }
+        Insert: {
+          access_level?: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          justification?: string | null
+          session_token: string
+          user_id: string
+        }
+        Update: {
+          access_level?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          justification?: string | null
+          session_token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sensitive_data_access_log: {
+        Row: {
+          access_reason: string | null
+          created_at: string | null
+          field_accessed: string
+          id: string
+          ip_address: string | null
+          record_id: string | null
+          table_name: string
+          user_id: string
+        }
+        Insert: {
+          access_reason?: string | null
+          created_at?: string | null
+          field_accessed: string
+          id?: string
+          ip_address?: string | null
+          record_id?: string | null
+          table_name: string
+          user_id: string
+        }
+        Update: {
+          access_reason?: string | null
+          created_at?: string | null
+          field_accessed?: string
+          id?: string
+          ip_address?: string | null
+          record_id?: string | null
+          table_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       system_backups: {
         Row: {
           backup_type: string
@@ -641,6 +704,10 @@ export type Database = {
           status: string
         }[]
       }
+      create_sensitive_access_session: {
+        Args: { p_access_level: string; p_justification: string }
+        Returns: string
+      }
       get_company_settings: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -666,6 +733,23 @@ export type Database = {
           active_drivers: number
           active_vehicles: number
           total_inspections: number
+        }[]
+      }
+      get_driver_data_secure: {
+        Args: { p_driver_id: string; p_session_token?: string }
+        Returns: {
+          avatar_url: string
+          cnh_numero: string
+          cnh_validade: string
+          cpf: string
+          created_at: string
+          email: string
+          endereco: string
+          id: string
+          is_active: boolean
+          nome_completo: string
+          telefone: string
+          updated_at: string
         }[]
       }
       get_driver_full_data: {
@@ -739,6 +823,10 @@ export type Database = {
           can_view_all_inspections: boolean
         }[]
       }
+      is_business_hours: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       log_data_access: {
         Args: { operation: string; record_id: string; table_name: string }
         Returns: undefined
@@ -749,6 +837,15 @@ export type Database = {
       }
       log_sensitive_access: {
         Args: { access_type: string; record_id: string; table_name: string }
+        Returns: undefined
+      }
+      log_sensitive_data_access: {
+        Args: {
+          p_access_reason?: string
+          p_field_accessed: string
+          p_record_id: string
+          p_table_name: string
+        }
         Returns: undefined
       }
       log_system_event: {
@@ -818,6 +915,10 @@ export type Database = {
           details: string
           status: string
         }[]
+      }
+      validate_sensitive_access_session: {
+        Args: { p_required_level: string; p_session_token: string }
+        Returns: boolean
       }
     }
     Enums: {
