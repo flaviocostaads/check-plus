@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,6 +28,7 @@ export const AppHeader = ({
   vehiclePhotoUrl = "",
   vehicleName = ""
 }: AppHeaderProps) => {
+  const navigate = useNavigate();
   const [companySettings, setCompanySettings] = useState<any>(null);
 
   useEffect(() => {
@@ -46,6 +48,15 @@ export const AppHeader = ({
     } catch (error) {
       console.error("Erro ao buscar configurações:", error);
     }
+  };
+
+  const handleNotifications = () => {
+    // TODO: Implementar página de notificações
+    console.log("Abrindo notificações...");
+  };
+
+  const handleSettings = () => {
+    navigate('/settings');
   };
 
   const navigationItems = [
@@ -110,8 +121,12 @@ export const AppHeader = ({
             </Badge>
             
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={handleNotifications}>
                 <Bell className="h-5 w-5 text-muted-foreground" />
+              </Button>
+              
+              <Button variant="ghost" size="sm" onClick={handleSettings}>
+                <Settings className="h-5 w-5 text-muted-foreground" />
               </Button>
               
               <Button variant="ghost" size="sm" onClick={onLogout}>

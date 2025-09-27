@@ -8,6 +8,7 @@ import AuthForm from "@/components/AuthForm";
 import Dashboard from "./Dashboard";
 import { VehicleType, VehicleData, DriverData, InspectionData } from "@/types/inspection";
 import { useAuth } from "@/contexts/AuthContext";
+import { QuickActions } from "@/components/QuickActions";
 import appLogo from "@/assets/app-logo.png";
 
 type Step = 'dashboard' | 'selector' | 'vehicle' | 'driver' | 'inspection' | 'complete';
@@ -112,8 +113,8 @@ const Index = () => {
         <Dashboard 
           user={userProfile || { 
             email: user.email || '', 
-            name: userProfile?.name || 'Flávio Souza Costa', 
-            role: 'admin' 
+            name: userProfile?.name || user.email?.split('@')[0] || 'Usuário', 
+            role: (userProfile?.role as 'admin' | 'supervisor' | 'inspector' | 'operator') || 'operator'
           }} 
           onNewInspection={handleNewInspection}
           onLogout={logout}

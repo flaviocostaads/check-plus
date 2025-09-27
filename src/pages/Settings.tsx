@@ -493,12 +493,15 @@ const Settings = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button variant="outline" className="w-full justify-start">
+                  <Upload className="h-4 w-4 mr-2" />
                   Exportar Dados
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
+                  <Camera className="h-4 w-4 mr-2" />
                   Importar Dados
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
+                  <Save className="h-4 w-4 mr-2" />
                   Backup Automático
                 </Button>
               </CardContent>
@@ -509,13 +512,16 @@ const Settings = () => {
                 <CardTitle>Sistema</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={() => console.log('Abrindo logs do sistema...')}>
+                  <SettingsIcon className="h-4 w-4 mr-2" />
                   Logs do Sistema
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={() => console.log('Limpando cache...')}>
+                  <Trash2 className="h-4 w-4 mr-2" />
                   Limpar Cache
                 </Button>
-                <Button variant="destructive" className="w-full justify-start">
+                <Button variant="destructive" className="w-full justify-start" onClick={() => console.log('Reset configurações...')}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
                   Reset Configurações
                 </Button>
               </CardContent>

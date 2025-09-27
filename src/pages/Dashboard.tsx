@@ -26,8 +26,9 @@ import {
   Trash2,
   ClipboardList
 } from "lucide-react";
+import { QuickActions } from "@/components/QuickActions";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 interface DashboardProps {
@@ -140,11 +141,7 @@ const Dashboard = ({
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar dados do dashboard",
-        variant: "destructive"
-      });
+      toast.error("Erro ao carregar dados do dashboard");
     } finally {
       setLoading(false);
     }
@@ -248,6 +245,11 @@ const Dashboard = ({
           </div>
         </div>
 
+        {/* Quick Actions - Moved here after Welcome Section */}
+        <div className="mb-6 lg:mb-8">
+          <QuickActions userRole={user?.role} onNewInspection={handleNewInspection} />
+        </div>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200/50">
@@ -324,50 +326,9 @@ const Dashboard = ({
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-          {/* Quick Actions - Now First on Mobile */}
-          <div className="lg:order-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Ações Rápidas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button onClick={handleNewInspection} className="w-full justify-start bg-gradient-primary hover:opacity-90">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Inspeção
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/vehicles'}>
-                  <Car className="h-4 w-4 mr-2" />
-                  Gerenciar Veículos
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/reports'}>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Relatórios
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/drivers'}>
-                  <Users className="h-4 w-4 mr-2" />
-                  Motoristas
-                </Button>
-                {(user?.role === 'admin' || user?.role === 'supervisor') && (
-                  <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/user-management'}>
-                    <Users className="h-4 w-4 mr-2" />
-                    Usuários
-                  </Button>
-                )}
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/checklist'}>
-                  <ClipboardList className="h-4 w-4 mr-2" />
-                  Gerenciador de Checklists
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/settings'}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Configurações
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recent Inspections - Now Second */}
-          <div className="lg:col-span-2 lg:order-1">
+        <div className="grid grid-cols-1 gap-4 lg:gap-8">
+          {/* Recent Inspections */}
+          <div>
             <Card className="h-fit">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

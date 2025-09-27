@@ -33,8 +33,8 @@ export const AuthenticatedLayout: React.FC<AuthenticatedLayoutProps> = ({
       <AppHeader 
         user={userProfile || { 
           email: user?.email || '', 
-          name: user?.email || '', 
-          role: 'admin' as 'admin' | 'supervisor' | 'inspector' | 'operator'
+          name: user?.email?.split('@')[0] || 'Usuário', 
+          role: (userProfile?.role as 'admin' | 'supervisor' | 'inspector' | 'operator') || 'operator'
         }}
         onLogout={logout}
       />
