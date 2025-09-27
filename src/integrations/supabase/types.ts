@@ -350,13 +350,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "inspections_driver_id_fkey"
-            columns: ["driver_id"]
-            isOneToOne: false
-            referencedRelation: "drivers"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "inspections_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
@@ -523,7 +516,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      drivers_basic_view: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: string | null
+          is_active: boolean | null
+          nome_completo: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          nome_completo?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          nome_completo?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_current_user_role: {
@@ -573,6 +589,14 @@ export type Database = {
       log_sensitive_access: {
         Args: { access_type: string; record_id: string; table_name: string }
         Returns: undefined
+      }
+      search_drivers_for_assignment: {
+        Args: { search_term?: string }
+        Returns: {
+          avatar_url: string
+          id: string
+          nome_completo: string
+        }[]
       }
       validate_cnh: {
         Args: { cnh: string }
