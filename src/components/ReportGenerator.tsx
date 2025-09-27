@@ -343,6 +343,31 @@ export default function ReportGenerator({ inspection, onShare }: ReportGenerator
       // Inspector signature area  
       pdf.line(105, yPosition, 175, yPosition);
       
+      // Add actual inspector signature if available
+      if (inspection.inspectorSignature) {
+        try {
+          // Create a small canvas to render the inspector signature
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = 200;
+          canvas.height = 60;
+          
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = () => {
+              ctx.drawImage(img, 0, 0, 200, 60);
+              const dataUrl = canvas.toDataURL('image/png', 0.8);
+              pdf.addImage(dataUrl, 'PNG', 105, yPosition - 20, 70, 18);
+              resolve(null);
+            };
+            img.onerror = () => resolve(null); // Continue without signature if failed
+            img.src = inspection.inspectorSignature;
+          });
+        } catch (error) {
+          console.log('Could not load inspector signature:', error);
+        }
+      }
+      
       pdf.setFontSize(8);
       pdf.text('Assinatura do Motorista', 20, yPosition + 5);
       pdf.text('Assinatura do Inspetor', 105, yPosition + 5);

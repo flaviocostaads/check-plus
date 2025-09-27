@@ -34,6 +34,7 @@ export interface InspectionData {
   checklistItems: ChecklistItem[];
   damageMarkers?: DamageMarker[];
   signature?: string;
+  inspectorSignature?: string;
   createdAt: Date;
   location?: {
     latitude: number;

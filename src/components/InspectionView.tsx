@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import ChecklistItemComponent from "./ChecklistItemComponent";
 import DamageMarker from "./DamageMarker";
 import SignatureCapture from "./SignatureCapture";
+import InspectorSignatureCapture from "./InspectorSignatureCapture";
 import ReportGenerator from "./ReportGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -38,10 +39,11 @@ export default function InspectionView({
   onNext, 
   onBack 
 }: InspectionViewProps) {
-  const [currentStep, setCurrentStep] = useState<'checklist' | 'damages' | 'signature' | 'report'>('checklist');
+  const [currentStep, setCurrentStep] = useState<'checklist' | 'damages' | 'signature' | 'inspector-signature' | 'report'>('checklist');
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
   const [damageMarkers, setDamageMarkers] = useState<DamageMarkerType[]>([]);
   const [signature, setSignature] = useState<string | null>(null);
+  const [inspectorSignature, setInspectorSignature] = useState<string | null>(null);
   
   useEffect(() => {
     const baseItems = vehicleType === 'car' ? CAR_CHECKLIST_ITEMS : MOTO_CHECKLIST_ITEMS;
@@ -92,6 +94,9 @@ export default function InspectionView({
       setCurrentStep('signature');
     } else if (currentStep === 'signature') {
       if (!signature) return;
+      setCurrentStep('inspector-signature');
+    } else if (currentStep === 'inspector-signature') {
+      if (!inspectorSignature) return;
       setCurrentStep('report');
     } else if (currentStep === 'report') {
       try {
@@ -192,7 +197,7 @@ export default function InspectionView({
               }
             }
 
-            // Update inspection with signature
+            // Update inspection with signatures
             if (signature) {
               await supabase
                 .from('inspections')
@@ -210,6 +215,7 @@ export default function InspectionView({
           checklistItems,
           damageMarkers,
           signature,
+          inspectorSignature,
           createdAt: new Date()
         };
         
@@ -228,8 +234,10 @@ export default function InspectionView({
       setCurrentStep('checklist');
     } else if (currentStep === 'signature') {
       setCurrentStep('damages');
-    } else if (currentStep === 'report') {
+    } else if (currentStep === 'inspector-signature') {
       setCurrentStep('signature');
+    } else if (currentStep === 'report') {
+      setCurrentStep('inspector-signature');
     }
   };
 
@@ -237,7 +245,8 @@ export default function InspectionView({
     switch (currentStep) {
       case 'checklist': return `Inspeção ${vehicleType === 'car' ? 'Carro' : 'Moto'}`;
       case 'damages': return 'Registro de Avarias';
-      case 'signature': return 'Assinatura';
+      case 'signature': return 'Assinatura do Motorista';
+      case 'inspector-signature': return 'Assinatura do Inspetor';
       case 'report': return 'Finalizar Relatório';
     }
   };
@@ -247,6 +256,7 @@ export default function InspectionView({
       case 'checklist': return vehicleType === 'car' ? <Car className="w-5 h-5 text-primary" /> : <Bike className="w-5 h-5 text-primary" />;
       case 'damages': return <MapPin className="w-5 h-5 text-primary" />;
       case 'signature': return <PenTool className="w-5 h-5 text-primary" />;
+      case 'inspector-signature': return <User className="w-5 h-5 text-primary" />;
       case 'report': return <FileText className="w-5 h-5 text-primary" />;
     }
   };
@@ -380,7 +390,14 @@ export default function InspectionView({
           />
         )}
 
-        {currentStep === 'report' && signature && (
+        {currentStep === 'inspector-signature' && (
+          <InspectorSignatureCapture
+            inspectorName="NSA - Norte Security Advanced"
+            onSignatureCapture={setInspectorSignature}
+          />
+        )}
+
+        {currentStep === 'report' && signature && inspectorSignature && (
           <ReportGenerator
             inspection={{
               id: `insp-${Date.now()}`,
@@ -390,6 +407,7 @@ export default function InspectionView({
               checklistItems,
               damageMarkers,
               signature,
+              inspectorSignature,
               createdAt: new Date()
             }}
           />
@@ -404,16 +422,19 @@ export default function InspectionView({
           className="w-full"
           disabled={
             (currentStep === 'checklist' && !canProceed) ||
-            (currentStep === 'signature' && !signature)
+            (currentStep === 'signature' && !signature) ||
+            (currentStep === 'inspector-signature' && !inspectorSignature)
           }
           onClick={handleStepNext}
         >
           {currentStep === 'report' ? <CheckCircle className="w-5 h-5 mr-2" /> : <ArrowRight className="w-5 h-5 mr-2" />}
           {currentStep === 'checklist' && !canProceed && `Faltam ${totalItems - completedItems} itens`}
           {currentStep === 'checklist' && canProceed && 'Próximo: Avarias'}
-          {currentStep === 'damages' && 'Próximo: Assinatura'}
-          {currentStep === 'signature' && !signature && 'Aguardando assinatura'}
-          {currentStep === 'signature' && signature && 'Próximo: Relatório'}
+          {currentStep === 'damages' && 'Próximo: Assinatura Motorista'}
+          {currentStep === 'signature' && !signature && 'Aguardando assinatura do motorista'}
+          {currentStep === 'signature' && signature && 'Próximo: Assinatura Inspetor'}
+          {currentStep === 'inspector-signature' && !inspectorSignature && 'Aguardando assinatura do inspetor'}
+          {currentStep === 'inspector-signature' && inspectorSignature && 'Próximo: Relatório'}
           {currentStep === 'report' && 'Finalizar Inspeção'}
         </Button>
       </div>
