@@ -74,6 +74,7 @@ const Dashboard = ({
     criticalIssues: 0,
     monthlyGrowth: 0
   });
+  const [activeDriversCount, setActiveDriversCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -110,6 +111,14 @@ const Dashboard = ({
 
       if (vehiclesError) throw vehiclesError;
 
+      // Fetch active drivers count
+      const { count: driversCount, error: driversError } = await supabase
+        .from('drivers')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true);
+
+      if (driversError) throw driversError;
+
       // Calculate stats
       const totalInspections = inspectionsData?.length || 0;
       const today = new Date().toDateString();
@@ -133,6 +142,7 @@ const Dashboard = ({
         criticalIssues,
         monthlyGrowth: 0 // This would need historical data to calculate
       });
+      setActiveDriversCount(driversCount || 0);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast.error("Erro ao carregar dados do dashboard");
@@ -247,15 +257,15 @@ const Dashboard = ({
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-600 text-sm font-medium">Pendentes</p>
-                  <p className="text-2xl font-bold text-orange-900">{loading ? '...' : stats.pendingInspections}</p>
+                  <p className="text-orange-600 text-sm font-medium">Motoristas Ativos</p>
+                  <p className="text-2xl font-bold text-orange-900">{loading ? '...' : activeDriversCount}</p>
                   <p className="text-xs text-orange-600 mt-1">
-                    <Clock className="h-3 w-3 inline mr-1" />
-                    Aguardando
+                    <Users className="h-3 w-3 inline mr-1" />
+                    Em atividade
                   </p>
                 </div>
                 <div className="bg-orange-500 p-3 rounded-full">
-                  <Clock className="h-6 w-6 text-white" />
+                  <Users className="h-6 w-6 text-white" />
                 </div>
               </div>
             </CardContent>
@@ -291,16 +301,6 @@ const Dashboard = ({
                     <FileText className="h-5 w-5 text-primary" />
                     Inspeções Recentes
                   </CardTitle>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Filtrar
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Search className="h-4 w-4 mr-2" />
-                      Buscar
-                    </Button>
-                  </div>
                 </div>
               </CardHeader>
               <CardContent>

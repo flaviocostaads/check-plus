@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { X, Download, FileText, Car, User, Calendar, MapPin, Eye } from "lucide-react";
+import { X, Download, FileText, Car, User, Calendar, MapPin, Eye, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -143,6 +143,10 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
     return summary;
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild onClick={handleOpen}>
@@ -150,10 +154,16 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Relatório de Inspeção Detalhado
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Relatório de Inspeção Detalhado
+            </DialogTitle>
+            <Button onClick={handlePrint} variant="outline" size="sm" className="gap-2">
+              <Printer className="h-4 w-4" />
+              Imprimir
+            </Button>
+          </div>
         </DialogHeader>
 
         {loading ? (

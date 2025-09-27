@@ -91,7 +91,7 @@ export const AppHeader = ({
                 {companySettings?.company_name || "NSA Checklist"}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Sistema de Gestão de Inspeções Veiculares
+                Sistema de Inspeções Veiculares
               </p>
             </div>
             

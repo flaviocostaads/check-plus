@@ -453,7 +453,7 @@ export const Reports = () => {
                         <TableHead>Localização</TableHead>
                         <TableHead>Motorista</TableHead>
                         <TableHead>CPF</TableHead>
-                        <TableHead>Status Geral</TableHead>
+                        
                         <TableHead>Ações</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -486,21 +486,6 @@ export const Reports = () => {
                             </TableCell>
                             <TableCell>{report.driver_name}</TableCell>
                             <TableCell>{report.driver_cpf}</TableCell>
-                            <TableCell>
-                              <div className="flex flex-col gap-1">
-                                <div className="flex gap-2 text-xs">
-                                  <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                    OK: {summary.ok}
-                                  </Badge>
-                                  <Badge variant="secondary" className="bg-red-100 text-red-800">
-                                    Trocar: {summary.needs_replacement}
-                                  </Badge>
-                                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                                    Obs: {summary.observation}
-                                  </Badge>
-                                </div>
-                              </div>
-                            </TableCell>
                             <TableCell>
                               <div className="flex gap-1">
                                 <ReportViewer reportId={report.id}>
