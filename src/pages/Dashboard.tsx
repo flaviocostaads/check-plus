@@ -104,55 +104,68 @@ const Dashboard = ({
 
       if (inspectionsError) throw inspectionsError;
 
-      // Fetch vehicles count
-      const { count: vehiclesCount, error: vehiclesError } = await supabase
-        .from('vehicles')
-        .select('*', { count: 'exact', head: true });
+      // Get dashboard statistics using the new secure function
+      const { data: statsData, error: statsError } = await supabase
+        .rpc('get_dashboard_stats');
 
-      if (vehiclesError) throw vehiclesError;
-
-      // Try to fetch active drivers count - handle permission errors gracefully
-      let driversCount = 0;
-      try {
-        const { data: driversData, error: driversError } = await supabase
-          .rpc('get_drivers_basic_info');
+      if (statsError) {
+        console.warn('Could not fetch dashboard stats:', statsError);
+        // Use fallback values
+        setActiveDriversCount(0);
+        setStats({
+          totalInspections: inspectionsData?.length || 0,
+          completedToday: inspectionsData?.filter(inspection => 
+            new Date(inspection.created_at).toDateString() === new Date().toDateString()
+          ).length || 0,
+          pendingInspections: 0,
+          activeVehicles: 0,
+          criticalIssues: 0,
+          monthlyGrowth: 0
+        });
+      } else if (statsData && statsData.length > 0) {
+        const stats = statsData[0];
+        setActiveDriversCount(Number(stats.active_drivers));
         
-        if (!driversError && driversData) {
-          driversCount = driversData.length;
-        }
-      } catch (error) {
-        console.warn('Could not fetch drivers count:', error);
-        // Fallback to 0 if no access
-        driversCount = 0;
+        // Calculate other stats
+        const totalInspections = Number(stats.total_inspections);
+        const today = new Date().toDateString();
+        const completedToday = inspectionsData?.filter(inspection => 
+          new Date(inspection.created_at).toDateString() === today
+        ).length || 0;
+
+        const criticalIssues = inspectionsData?.reduce((acc, inspection) => {
+          const issues = inspection.inspection_items?.filter(item => 
+            item.status === 'needs_replacement'
+          ).length || 0;
+          return acc + (issues > 0 ? 1 : 0);
+        }, 0) || 0;
+
+        setStats({
+          totalInspections,
+          completedToday,
+          pendingInspections: 0,
+          activeVehicles: Number(stats.active_vehicles),
+          criticalIssues,
+          monthlyGrowth: 0
+        });
       }
 
-      // Calculate stats
-      const totalInspections = inspectionsData?.length || 0;
-      const today = new Date().toDateString();
-      const completedToday = inspectionsData?.filter(inspection => 
-        new Date(inspection.created_at).toDateString() === today
-      ).length || 0;
-
-      const criticalIssues = inspectionsData?.reduce((acc, inspection) => {
-        const issues = inspection.inspection_items?.filter(item => 
-          item.status === 'needs_replacement'
-        ).length || 0;
-        return acc + (issues > 0 ? 1 : 0);
-      }, 0) || 0;
-
       setInspections(inspectionsData || []);
-      setStats({
-        totalInspections,
-        completedToday,
-        pendingInspections: 0, // We don't have pending status in our current schema
-        activeVehicles: vehiclesCount || 0,
-        criticalIssues,
-        monthlyGrowth: 0 // This would need historical data to calculate
-      });
-      setActiveDriversCount(driversCount);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast.error("Erro ao carregar dados do dashboard");
+      
+      // Set fallback values to prevent UI crashes
+      setActiveDriversCount(0);
+      setStats({
+        totalInspections: 0,
+        completedToday: 0,
+        pendingInspections: 0,
+        activeVehicles: 0,
+        criticalIssues: 0,
+        monthlyGrowth: 0
+      });
+      setInspections([]);
     } finally {
       setLoading(false);
     }

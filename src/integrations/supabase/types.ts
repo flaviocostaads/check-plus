@@ -645,6 +645,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_drivers: number
+          active_vehicles: number
+          total_inspections: number
+        }[]
+      }
       get_driver_full_data: {
         Args: { driver_id: string }
         Returns: {
