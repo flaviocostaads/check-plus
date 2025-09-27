@@ -251,6 +251,7 @@ export default function InspectionInterface() {
                 cnh_numero: driver.cnh_numero,
                 cnh_validade: driver.cnh_validade
               }}
+              inspectionId={inspectionId}
               onNext={handleInspectionComplete}
               onBack={() => setCurrentStep('odometer')}
             />

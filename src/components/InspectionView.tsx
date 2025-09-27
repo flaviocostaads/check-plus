@@ -7,6 +7,8 @@ import ChecklistItemComponent from "./ChecklistItemComponent";
 import DamageMarker from "./DamageMarker";
 import SignatureCapture from "./SignatureCapture";
 import ReportGenerator from "./ReportGenerator";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { 
   VehicleType, 
   ChecklistItem, 
@@ -23,6 +25,7 @@ interface InspectionViewProps {
   vehicleType: VehicleType;
   vehicleData: VehicleData;
   driverData: DriverData;
+  inspectionId?: string;
   onNext: (inspection: InspectionData) => void;
   onBack: () => void;
 }
@@ -31,6 +34,7 @@ export default function InspectionView({
   vehicleType, 
   vehicleData, 
   driverData, 
+  inspectionId,
   onNext, 
   onBack 
 }: InspectionViewProps) {
@@ -80,7 +84,7 @@ export default function InspectionView({
 
   const canProceed = completedItems === totalItems;
 
-  const handleStepNext = () => {
+  const handleStepNext = async () => {
     if (currentStep === 'checklist') {
       if (!canProceed) return;
       setCurrentStep('damages');
@@ -90,17 +94,130 @@ export default function InspectionView({
       if (!signature) return;
       setCurrentStep('report');
     } else if (currentStep === 'report') {
-      const inspection: InspectionData = {
-        id: `insp-${Date.now()}`,
-        vehicleType,
-        vehicleData,
-        driverData,
-        checklistItems,
-        damageMarkers,
-        signature,
-        createdAt: new Date()
-      };
-      onNext(inspection);
+      try {
+        if (inspectionId) {
+          // Save checklist items to database
+          const { data: templates } = await supabase
+            .from('checklist_templates')
+            .select('*')
+            .eq('vehicle_type', vehicleType)
+            .eq('is_active', true);
+
+          if (templates) {
+            // Save inspection items
+            const inspectionItemsToSave = checklistItems
+              .filter(item => item.status)
+              .map(item => {
+                const template = templates.find(t => t.name === item.name);
+                return {
+                  inspection_id: inspectionId,
+                  checklist_template_id: template?.id,
+                  status: item.status,
+                  observations: item.observations || null
+                };
+              })
+              .filter(item => item.checklist_template_id);
+
+            if (inspectionItemsToSave.length > 0) {
+              const { error: itemsError } = await supabase
+                .from('inspection_items')
+                .insert(inspectionItemsToSave);
+
+              if (itemsError) {
+                console.error('Error saving inspection items:', itemsError);
+                toast.error('Erro ao salvar itens da inspeção');
+                return;
+              }
+
+              // Save inspection photos if any
+              for (const item of checklistItems) {
+                if (item.photos && item.photos.length > 0) {
+                  const template = templates.find(t => t.name === item.name);
+                  if (template) {
+                    const { data: savedItem } = await supabase
+                      .from('inspection_items')
+                      .select('id')
+                      .eq('inspection_id', inspectionId)
+                      .eq('checklist_template_id', template.id)
+                      .single();
+
+                    if (savedItem) {
+                      const photosToSave = item.photos.map(photo => ({
+                        inspection_item_id: savedItem.id,
+                        photo_url: photo
+                      }));
+
+                      await supabase
+                        .from('inspection_photos')
+                        .insert(photosToSave);
+                    }
+                  }
+                }
+              }
+            }
+
+            // Save damage markers if any
+            if (damageMarkers.length > 0) {
+              const damageMarkersToSave = damageMarkers.map(damage => ({
+                inspection_id: inspectionId,
+                description: damage.description,
+                x_position: damage.x,
+                y_position: damage.y
+              }));
+
+              const { data: savedDamages, error: damageError } = await supabase
+                .from('damage_markers')
+                .insert(damageMarkersToSave)
+                .select();
+
+              if (damageError) {
+                console.error('Error saving damage markers:', damageError);
+              } else if (savedDamages) {
+                // Save damage photos
+                for (let i = 0; i < damageMarkers.length; i++) {
+                  const damage = damageMarkers[i];
+                  const savedDamage = savedDamages[i];
+                  
+                  if (damage.photos && damage.photos.length > 0) {
+                    const photosToSave = damage.photos.map(photo => ({
+                      damage_marker_id: savedDamage.id,
+                      photo_url: photo
+                    }));
+
+                    await supabase
+                      .from('damage_marker_photos')
+                      .insert(photosToSave);
+                  }
+                }
+              }
+            }
+
+            // Update inspection with signature
+            if (signature) {
+              await supabase
+                .from('inspections')
+                .update({ signature_data: signature })
+                .eq('id', inspectionId);
+            }
+          }
+        }
+
+        const inspection: InspectionData = {
+          id: inspectionId || `insp-${Date.now()}`,
+          vehicleType,
+          vehicleData,
+          driverData,
+          checklistItems,
+          damageMarkers,
+          signature,
+          createdAt: new Date()
+        };
+        
+        onNext(inspection);
+      } catch (error) {
+        console.error('Error saving inspection:', error);
+        toast.error('Erro ao salvar inspeção');
+      }
     }
   };
 

@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import ReportGenerator from "./ReportGenerator";
 import nsaLogo from "@/assets/nsa-logo.jpg";
 
 interface ReportViewerProps {
@@ -414,37 +413,6 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
               </Card>
             )}
 
-            {/* Botões de Ação */}
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <ReportGenerator 
-                inspection={{
-                  id: inspection.id,
-                  createdAt: new Date(inspection.created_at),
-                  vehicleData: {
-                    marca_modelo: inspection.vehicles.marca_modelo,
-                    placa: inspection.vehicles.placa,
-                    cor: inspection.vehicles.cor,
-                    ano: inspection.vehicles.ano,
-                    renavam: inspection.vehicles.renavam,
-                    km_atual: inspection.vehicles.km_atual || "N/A"
-                  },
-                  driverData: {
-                    nome_completo: inspection.driver_name,
-                    cpf: inspection.driver_cpf,
-                    cnh_numero: inspection.driver_cnh,
-                    cnh_validade: inspection.driver_cnh_validade
-                  },
-                  checklistItems: inspection.inspection_items?.map(item => ({
-                    id: item.id,
-                    name: item.checklist_templates.name,
-                    status: item.status as any,
-                    observations: item.observations,
-                    photos: item.inspection_photos?.map(p => p.photo_url) || []
-                  })) || [],
-                  vehicleType: inspection.vehicles.vehicle_type as 'car' | 'moto'
-                }}
-              />
-            </div>
           </div>
         ) : (
           <div className="text-center py-8">
