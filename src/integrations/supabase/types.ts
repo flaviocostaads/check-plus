@@ -516,32 +516,19 @@ export type Database = {
       }
     }
     Views: {
-      drivers_basic_view: {
-        Row: {
-          avatar_url: string | null
-          created_at: string | null
-          id: string | null
-          is_active: boolean | null
-          nome_completo: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          nome_completo?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          nome_completo?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
+      comprehensive_security_check: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          category: string
+          check_name: string
+          details: string
+          severity: string
+          status: string
+        }[]
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
