@@ -7,12 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
-import { ArrowLeft, Download, Printer, FileText, Filter, Calendar, Car } from "lucide-react";
+import { ArrowLeft, Download, Printer, FileText, Filter, Calendar, Car, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import ReportViewer from "@/components/ReportViewer";
+import ReportGenerator from "@/components/ReportGenerator";
 
 interface ReportData {
   id: string;
@@ -149,11 +151,76 @@ export const Reports = () => {
     setTimeout(() => fetchReports(), 100);
   };
 
-  const exportToPDF = () => {
-    toast({
-      title: "Exportando PDF",
-      description: "Funcionalidade em desenvolvimento"
-    });
+  const downloadPDF = async (reportId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("inspections")
+        .select(`
+          *,
+          vehicles (*),
+          inspection_items (
+            *,
+            checklist_templates (name, requires_photo),
+            inspection_photos (photo_url)
+          )
+        `)
+        .eq("id", reportId)
+        .single();
+
+      if (error) throw error;
+
+      // Transform data to match ReportGenerator interface
+      const inspectionData = {
+        id: data.id,
+        createdAt: new Date(data.created_at),
+        vehicleData: {
+          marca_modelo: data.vehicles.marca_modelo,
+          placa: data.vehicles.placa,
+          cor: data.vehicles.cor,
+          ano: data.vehicles.ano,
+          renavam: data.vehicles.renavam,
+          km_atual: data.vehicles.km_atual || "N/A"
+        },
+        driverData: {
+          nome_completo: data.driver_name,
+          cpf: data.driver_cpf,
+          cnh_numero: data.driver_cnh,
+          cnh_validade: data.driver_cnh_validade
+        },
+        checklistItems: data.inspection_items?.map((item: any) => ({
+          id: item.id,
+          name: item.checklist_templates.name,
+          status: item.status,
+          observations: item.observations,
+          photos: item.inspection_photos?.map((p: any) => p.photo_url) || []
+        })) || []
+      };
+
+      // Create a temporary ReportGenerator to trigger download
+      const tempDiv = document.createElement('div');
+      tempDiv.style.display = 'none';
+      document.body.appendChild(tempDiv);
+      
+      // Import ReportGenerator dynamically and trigger PDF generation
+      const { default: ReportGenerator } = await import('@/components/ReportGenerator');
+      
+      // Simulate the PDF generation
+      const generator = new (ReportGenerator as any)({ 
+        inspection: inspectionData 
+      });
+      
+      // Trigger PDF generation directly
+      generator.generatePDF();
+      
+      document.body.removeChild(tempDiv);
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar PDF do relatório",
+        variant: "destructive"
+      });
+    }
   };
 
   const printReport = () => {
@@ -196,10 +263,6 @@ export const Reports = () => {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={exportToPDF} className="gap-2">
-              <Download className="h-4 w-4" />
-              Exportar PDF
-            </Button>
             <Button onClick={printReport} variant="outline" className="gap-2">
               <Printer className="h-4 w-4" />
               Imprimir
@@ -359,10 +422,17 @@ export const Reports = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
-                              <Button size="sm" variant="outline">
-                                Visualizar
-                              </Button>
-                              <Button size="sm" variant="outline">
+                              <ReportViewer reportId={report.id}>
+                                <Button size="sm" variant="outline">
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  Visualizar
+                                </Button>
+                              </ReportViewer>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => downloadPDF(report.id)}
+                              >
                                 <Download className="h-3 w-3" />
                               </Button>
                             </div>
