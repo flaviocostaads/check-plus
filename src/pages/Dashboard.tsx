@@ -346,7 +346,7 @@ const Dashboard = ({
                   <Users className="h-4 w-4 mr-2" />
                   Motoristas
                 </Button>
-                {(user.role === 'admin') && (
+                {(user?.role === 'admin') && (
                   <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/users'}>
                     <Users className="h-4 w-4 mr-2" />
                     Usuários
