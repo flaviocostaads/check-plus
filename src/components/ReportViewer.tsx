@@ -238,23 +238,33 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
           <div className="space-y-6 print-area">
             {/* Cabeçalho com Logo */}
             <Card>
-              <CardHeader className="text-center border-b">
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <img src={nsaLogo} alt="NSA Logo" className="h-16" />
-                  <div>
-                    <h2 className="text-xl font-bold">NORTE SECURITY ADVANCED LTDA</h2>
-                    <p className="text-sm text-muted-foreground">CNPJ: 41.537.956/0001-04</p>
-                    <p className="text-xs text-muted-foreground">
-                      Quadra Aço 90 (901 Sul) Alameda 17, SN - Sala 02 Quadra06 Lote 03<br/>
-                      Plano Diretor Sul - Palmas/TO - CEP: 77017-266
-                    </p>
+              <CardHeader className="text-center border-b p-4">
+                {/* Logo centralizada */}
+                <div className="flex justify-center mb-4">
+                  <img src={nsaLogo} alt="NSA Logo" className="h-16 w-auto" />
+                </div>
+                
+                {/* Dados da empresa */}
+                <div className="space-y-2 mb-4">
+                  <h2 className="text-lg sm:text-xl font-bold">NORTE SECURITY ADVANCED LTDA</h2>
+                  <p className="text-sm text-muted-foreground">CNPJ: 41.537.956/0001-04</p>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p>Quadra Aço 90 (901 Sul) Alameda 17, SN</p>
+                    <p>Sala 02 Quadra06 Lote 03</p>
+                    <p>Plano Diretor Sul - Palmas/TO - CEP: 77017-266</p>
                   </div>
                 </div>
-                <CardTitle className="text-center">RELATÓRIO DE INSPEÇÃO VEICULAR</CardTitle>
-                <p className="text-center text-sm text-muted-foreground">
-                  Data: {format(new Date(inspection.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })} | 
-                  ID: {inspection.id.slice(0, 8)}
-                </p>
+                
+                {/* Título do relatório */}
+                <CardTitle className="text-center text-base sm:text-lg font-bold mb-2">
+                  RELATÓRIO DE INSPEÇÃO VEICULAR
+                </CardTitle>
+                
+                {/* Informações do relatório */}
+                <div className="text-center text-xs sm:text-sm text-muted-foreground space-y-1">
+                  <p>Data: {format(new Date(inspection.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}</p>
+                  <p>ID: {inspection.id.slice(0, 8)}</p>
+                </div>
               </CardHeader>
             </Card>
 
@@ -266,7 +276,7 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
                   Dados do Veículo
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium">Marca/Modelo:</p>
                   <p className="text-sm text-muted-foreground">{inspection.vehicles.marca_modelo}</p>
@@ -302,7 +312,7 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
                   Dados do Condutor
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium">Nome Completo:</p>
                   <p className="text-sm text-muted-foreground">{inspection.driver_name}</p>
@@ -349,7 +359,7 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
                      {item.inspection_photos && item.inspection_photos.length > 0 && (
                        <div className="mt-3 no-print">
                          <p className="text-sm font-medium mb-2">Fotos do item:</p>
-                         <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                            {item.inspection_photos.map((photo: any, photoIndex: number) => (
                              <div key={photoIndex} className="relative group">
                                <img
@@ -391,7 +401,7 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
                       {marker.damage_marker_photos && marker.damage_marker_photos.length > 0 && (
                         <div className="mt-3">
                           <p className="text-sm font-medium mb-2">Fotos do dano:</p>
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {marker.damage_marker_photos.map((photo: any, photoIndex: number) => (
                               <div key={photoIndex} className="relative group">
                                 <img
