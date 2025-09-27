@@ -453,7 +453,7 @@ export const Reports = () => {
                         <TableHead>Localização</TableHead>
                         <TableHead>Motorista</TableHead>
                         <TableHead>CPF</TableHead>
-                        
+                        <TableHead>Problemas</TableHead>
                         <TableHead>Ações</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -486,6 +486,25 @@ export const Reports = () => {
                             </TableCell>
                             <TableCell>{report.driver_name}</TableCell>
                             <TableCell>{report.driver_cpf}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                {summary.needs_replacement > 0 && (
+                                  <Badge variant="destructive" className="text-xs">
+                                    {summary.needs_replacement} problema{summary.needs_replacement > 1 ? 's' : ''}
+                                  </Badge>
+                                )}
+                                {summary.observation > 0 && (
+                                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                                    {summary.observation} observação{summary.observation > 1 ? 'ões' : ''}
+                                  </Badge>
+                                )}
+                                {summary.needs_replacement === 0 && summary.observation === 0 && (
+                                  <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                                    OK
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
                             <TableCell>
                               <div className="flex gap-1">
                                 <ReportViewer reportId={report.id}>

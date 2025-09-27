@@ -77,6 +77,7 @@ const Dashboard = ({
   });
   const [activeDriversCount, setActiveDriversCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [viewedProblematicInspections, setViewedProblematicInspections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchDashboardData();
@@ -375,7 +376,15 @@ const Dashboard = ({
                             </Badge>
                             
                             <div className="flex gap-1">
-                              <ReportViewer reportId={inspection.id}>
+                              <ReportViewer 
+                                reportId={inspection.id}
+                                onView={() => {
+                                  // Mark this inspection as viewed if it has problems
+                                  if (issues > 0) {
+                                    setViewedProblematicInspections(prev => new Set([...prev, inspection.id]));
+                                  }
+                                }}
+                              >
                                 <Button variant="ghost" size="sm" title="Ver detalhes">
                                   <ArrowRight className="h-4 w-4" />
                                 </Button>
@@ -392,24 +401,34 @@ const Dashboard = ({
           </div>
 
           {/* Critical Issues Alert */}
-          {!loading && stats.criticalIssues > 0 && (
-            <Card className="border-red-200 bg-red-50/50">
-              <CardHeader>
-                <CardTitle className="text-lg text-red-700 flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5" />
-                  Atenção Requerida
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-red-600 mb-3">
-                  {stats.criticalIssues} veículo{stats.criticalIssues > 1 ? 's' : ''} com problemas críticos requer{stats.criticalIssues === 1 ? '' : 'em'} atenção imediata.
-                </div>
-                <Button variant="destructive" size="sm" className="w-full" onClick={() => navigate('/history')}>
-                  Ver Detalhes
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          {!loading && stats.criticalIssues > 0 && (() => {
+            // Check if there are any problematic inspections that haven't been viewed
+            const unviewedProblematicInspections = inspections.filter(inspection => {
+              const issues = inspection.inspection_items?.filter(item => 
+                item.status === 'needs_replacement' || item.status === 'observation'
+              ).length || 0;
+              return issues > 0 && !viewedProblematicInspections.has(inspection.id);
+            });
+
+            return unviewedProblematicInspections.length > 0 ? (
+              <Card className="border-red-200 bg-red-50/50">
+                <CardHeader>
+                  <CardTitle className="text-lg text-red-700 flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5" />
+                    Atenção Requerida
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-red-600 mb-3">
+                    {unviewedProblematicInspections.length} veículo{unviewedProblematicInspections.length > 1 ? 's' : ''} com problemas críticos requer{unviewedProblematicInspections.length === 1 ? '' : 'em'} atenção imediata.
+                  </div>
+                  <Button variant="destructive" size="sm" className="w-full" onClick={() => navigate('/history')}>
+                    Ver Detalhes
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : null;
+          })()}
         </div>
       </div>
     </div>

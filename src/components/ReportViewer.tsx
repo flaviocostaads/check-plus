@@ -13,6 +13,7 @@ import nsaLogo from "@/assets/nsa-logo.jpg";
 interface ReportViewerProps {
   reportId: string;
   children: React.ReactNode;
+  onView?: () => void;
 }
 
 interface InspectionDetails {
@@ -61,7 +62,7 @@ interface InspectionDetails {
   }>;
 }
 
-export default function ReportViewer({ reportId, children }: ReportViewerProps) {
+export default function ReportViewer({ reportId, children, onView }: ReportViewerProps) {
   const [inspection, setInspection] = useState<InspectionDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -116,6 +117,7 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
   const handleOpen = () => {
     setOpen(true);
     fetchInspectionDetails();
+    onView?.(); // Call the onView callback if provided
   };
 
   const getStatusBadge = (status: string) => {
