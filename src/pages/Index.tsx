@@ -49,7 +49,7 @@ const Index = () => {
   };
 
   const handleNewInspection = () => {
-    setCurrentStep('selector');
+    navigate('/new-inspection');
   };
 
   // Show login if not authenticated
@@ -110,7 +110,11 @@ const Index = () => {
     <>
       {currentStep === 'dashboard' && user && (
         <Dashboard 
-          user={userProfile || { email: user.email || '', name: user.email || '', role: 'admin' }} 
+          user={userProfile || { 
+            email: user.email || '', 
+            name: userProfile?.name || 'Flávio Souza Costa', 
+            role: 'admin' 
+          }} 
           onNewInspection={handleNewInspection}
           onLogout={logout}
         />

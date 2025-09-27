@@ -64,10 +64,10 @@ interface Stats {
 }
 
 const Dashboard = ({ 
-  user = { email: "demo@nsa.com", name: "Demo User", role: "admin" as const }, 
+  user, 
   onNewInspection, 
   onLogout = () => {} 
-}: DashboardProps = {}) => {
+}: DashboardProps) => {
   const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState("today");
   const [inspections, setInspections] = useState<InspectionData[]>([]);
@@ -104,7 +104,7 @@ const Dashboard = ({
           )
         `)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(3);
 
       if (inspectionsError) throw inspectionsError;
 
@@ -181,61 +181,61 @@ const Dashboard = ({
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       {/* Header */}
       <header className="bg-white/95 backdrop-blur-sm border-b border-border/50 sticky top-0 z-40">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-r from-primary to-primary-glow p-2 rounded-xl">
-                <BarChart3 className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-                  NSA Checklist Dashboard
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Sistema de Gestão de Inspeções Veiculares
-                </p>
-              </div>
+      <div className="container mx-auto px-4 sm:px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            <div className="bg-gradient-to-r from-primary to-primary-glow p-2 rounded-xl">
+              <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
             </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                NSA Checklist Dashboard
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Sistema de Gestão de Inspeções Veiculares
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 w-fit">
+              <Users className="h-3 w-3 mr-1" />
+              {user?.role === "admin" ? "Administrador" : "Operador"}
+            </Badge>
             
-            <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                <Users className="h-3 w-3 mr-1" />
-                {user.role === "admin" ? "Administrador" : "Operador"}
-              </Badge>
-              
-              <div className="flex items-center space-x-2">
-                <Bell className="h-5 w-5 text-muted-foreground" />
-                <Settings className="h-5 w-5 text-muted-foreground" />
-                <Button variant="ghost" size="sm" onClick={onLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </Button>
-              </div>
+            <div className="flex items-center space-x-2">
+              <Bell className="h-5 w-5 text-muted-foreground" />
+              <Settings className="h-5 w-5 text-muted-foreground" />
+              <Button variant="ghost" size="sm" onClick={onLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
             </div>
           </div>
         </div>
+      </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-primary/10 to-primary-glow/10 rounded-2xl p-6 border border-primary/20">
-            <div className="flex items-center justify-between">
+        <div className="mb-6 lg:mb-8">
+          <div className="bg-gradient-to-r from-primary/10 to-primary-glow/10 rounded-2xl p-4 sm:p-6 border border-primary/20">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-foreground mb-2">
-                  Bem-vindo, {user.name}! 👋
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
+                  Bem-vindo, {user?.name}! 👋
                 </h2>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-sm sm:text-base text-muted-foreground mb-4">
                   Gerencie suas inspeções veiculares de forma eficiente e mantenha seus veículos sempre seguros.
                 </p>
-                <Button onClick={handleNewInspection} className="bg-gradient-primary hover:opacity-90">
+                <Button onClick={handleNewInspection} className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   Nova Inspeção
                 </Button>
               </div>
-              <div className="hidden md:block">
+              <div className="sm:block">
                 <div className="bg-white/50 rounded-xl p-4 text-center">
-                  <Calendar className="h-8 w-8 text-primary mx-auto mb-2" />
+                  <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-primary mx-auto mb-2" />
                   <p className="text-sm font-medium">Hoje</p>
                   <p className="text-xs text-muted-foreground">
                     {new Date().toLocaleDateString('pt-BR')}
@@ -247,7 +247,7 @@ const Dashboard = ({
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200/50">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -322,12 +322,53 @@ const Dashboard = ({
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Inspections */}
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+          {/* Quick Actions - Now First on Mobile */}
+          <div className="lg:order-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Ações Rápidas</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button onClick={handleNewInspection} className="w-full justify-start bg-gradient-primary hover:opacity-90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Inspeção
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/vehicles'}>
+                  <Car className="h-4 w-4 mr-2" />
+                  Gerenciar Veículos
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/reports'}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Relatórios
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/drivers'}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Motoristas
+                </Button>
+                {(user.role === 'admin') && (
+                  <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/users'}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Usuários
+                  </Button>
+                )}
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/checklist'}>
+                  <ClipboardList className="h-4 w-4 mr-2" />
+                  Gerenciador de Checklists
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/settings'}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Configurações
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Inspections - Now Second */}
+          <div className="lg:col-span-2 lg:order-1">
             <Card className="h-fit">
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-primary" />
                     Inspeções Recentes
@@ -365,7 +406,7 @@ const Dashboard = ({
                       ).length || 0;
                       
                       return (
-                        <div key={inspection.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
+                        <div key={inspection.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors gap-4">
                           <div className="flex items-center space-x-4">
                             <div className="bg-primary/10 p-2 rounded-lg">
                               {inspection.vehicles.vehicle_type === "moto" ? 
@@ -409,99 +450,25 @@ const Dashboard = ({
             </Card>
           </div>
 
-          {/* Right Sidebar */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card>
+          {/* Critical Issues Alert */}
+          {!loading && stats.criticalIssues > 0 && (
+            <Card className="border-red-200 bg-red-50/50">
               <CardHeader>
-                <CardTitle className="text-lg">Ações Rápidas</CardTitle>
+                <CardTitle className="text-lg text-red-700 flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  Atenção Requerida
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Button onClick={handleNewInspection} className="w-full justify-start bg-gradient-primary hover:opacity-90">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Inspeção
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/vehicles'}>
-                  <Car className="h-4 w-4 mr-2" />
-                  Gerenciar Veículos
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/reports'}>
-                  <FileText className="h-4 w-4 mr-2" />
-                  Relatórios
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/drivers'}>
-                  <Users className="h-4 w-4 mr-2" />
-                  Motoristas
-                </Button>
-                {(user.role === 'admin') && (
-                  <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/users'}>
-                    <Users className="h-4 w-4 mr-2" />
-                    Usuários
-                  </Button>
-                )}
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/checklist'}>
-                  <ClipboardList className="h-4 w-4 mr-2" />
-                  Gerenciador de Checklists
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/settings'}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Configurações
+              <CardContent>
+                <div className="text-sm text-red-600 mb-3">
+                  {stats.criticalIssues} veículo{stats.criticalIssues > 1 ? 's' : ''} com problemas críticos requer{stats.criticalIssues === 1 ? '' : 'em'} atenção imediata.
+                </div>
+                <Button variant="destructive" size="sm" className="w-full" onClick={() => navigate('/history')}>
+                  Ver Detalhes
                 </Button>
               </CardContent>
             </Card>
-
-            {/* Performance Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Desempenho</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">Inspeções OK</span>
-                    <span className="font-medium">87%</span>
-                  </div>
-                  <Progress value={87} className="h-2" />
-                </div>
-                
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">Eficiência</span>
-                    <span className="font-medium">94%</span>
-                  </div>  
-                  <Progress value={94} className="h-2" />
-                </div>
-                
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">Meta Mensal</span>
-                    <span className="font-medium">73%</span>
-                  </div>
-                  <Progress value={73} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Critical Issues Alert */}
-            {!loading && stats.criticalIssues > 0 && (
-              <Card className="border-red-200 bg-red-50/50">
-                <CardHeader>
-                  <CardTitle className="text-lg text-red-700 flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5" />
-                    Atenção Requerida
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-red-600 mb-3">
-                    {stats.criticalIssues} veículo{stats.criticalIssues > 1 ? 's' : ''} com problemas críticos requer{stats.criticalIssues === 1 ? '' : 'em'} atenção imediata.
-                  </div>
-                  <Button variant="destructive" size="sm" className="w-full" onClick={() => navigate('/history')}>
-                    Ver Detalhes
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+          )}
         </div>
       </div>
     </div>
