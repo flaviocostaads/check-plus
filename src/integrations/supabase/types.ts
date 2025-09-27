@@ -439,6 +439,69 @@ export type Database = {
         }
         Relationships: []
       }
+      system_backups: {
+        Row: {
+          backup_type: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          file_path: string
+          file_size: number | null
+          id: string
+          status: string
+        }
+        Insert: {
+          backup_type: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_path: string
+          file_size?: number | null
+          id?: string
+          status?: string
+        }
+        Update: {
+          backup_type?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      system_logs: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          level: string
+          message: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          level: string
+          message: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          level?: string
+          message?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_role_permissions: {
         Row: {
           can_access_reports: boolean | null
@@ -561,6 +624,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      clear_system_cache: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       comprehensive_security_check: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -658,6 +725,19 @@ export type Database = {
       log_sensitive_access: {
         Args: { access_type: string; record_id: string; table_name: string }
         Returns: undefined
+      }
+      log_system_event: {
+        Args: {
+          p_category?: string
+          p_level: string
+          p_message: string
+          p_metadata?: Json
+        }
+        Returns: string
+      }
+      reset_system_configurations: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       search_drivers_for_assignment: {
         Args: { search_term?: string }

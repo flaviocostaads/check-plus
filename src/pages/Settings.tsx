@@ -214,6 +214,184 @@ const Settings = () => {
     }
   };
 
+  const handleExportData = async (type: string = 'all') => {
+    try {
+      setSaving(true);
+      console.log("Exportando dados...");
+      
+      const { data, error } = await supabase.functions.invoke('export-data', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        }
+      });
+
+      if (error) throw error;
+
+      // Create download link
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      a.href = url;
+      a.download = `nsa-checklist-export-${type}-${timestamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success("Dados exportados com sucesso!");
+    } catch (error) {
+      console.error("Erro ao exportar:", error);
+      toast.error("Erro ao exportar dados");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleImportData = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setSaving(true);
+      console.log("Importando dados...");
+      
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const { data, error } = await supabase.functions.invoke('import-data', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: formData
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast.success(`Dados importados: ${data.imported_tables.length} tabelas processadas`);
+        if (data.errors.length > 0) {
+          toast.warning(`${data.errors.length} erros encontrados durante a importação`);
+        }
+      } else {
+        toast.error("Falha na importação dos dados");
+      }
+    } catch (error) {
+      console.error("Erro ao importar:", error);
+      toast.error("Erro ao importar dados");
+    } finally {
+      setSaving(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
+  const handleAutomaticBackup = async () => {
+    try {
+      console.log("Configurando backup automático...");
+      await handleExportData('all');
+      toast.success("Backup automático iniciado!");
+    } catch (error) {
+      console.error("Erro no backup:", error);
+      toast.error("Erro ao realizar backup");
+    }
+  };
+
+  const handleSystemLogs = async () => {
+    try {
+      console.log("Abrindo logs do sistema...");
+      
+      const { data, error } = await supabase.functions.invoke('system-logs', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        }
+      });
+
+      if (error) throw error;
+
+      // Create a simple modal or new tab to display logs
+      const logsWindow = window.open('', '_blank', 'width=800,height=600');
+      if (logsWindow) {
+        logsWindow.document.write(`
+          <html>
+            <head><title>Logs do Sistema - NSA Checklist</title></head>
+            <body style="font-family: monospace; padding: 20px;">
+              <h2>Logs do Sistema</h2>
+              <pre>${JSON.stringify(data, null, 2)}</pre>
+            </body>
+          </html>
+        `);
+      }
+      
+      toast.success("Logs do sistema acessados!");
+    } catch (error) {
+      console.error("Erro ao acessar logs:", error);
+      toast.error("Erro ao acessar logs do sistema");
+    }
+  };
+
+  const handleClearCache = async () => {
+    try {
+      setSaving(true);
+      console.log("Limpando cache...");
+      
+      const { data, error } = await supabase.functions.invoke('system-maintenance', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'clear_cache' })
+      });
+
+      if (error) throw error;
+
+      toast.success(data.message);
+    } catch (error) {
+      console.error("Erro ao limpar cache:", error);
+      toast.error("Erro ao limpar cache do sistema");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleResetSettings = async () => {
+    if (!confirm("Tem certeza que deseja resetar todas as configurações? Esta ação não pode ser desfeita.")) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      console.log("Resetando configurações...");
+      
+      const { data, error } = await supabase.functions.invoke('system-maintenance', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'reset_configurations' })
+      });
+
+      if (error) throw error;
+
+      toast.success(data.message);
+      
+      // Refresh the page after reset
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      console.error("Erro ao resetar configurações:", error);
+      toast.error("Erro ao resetar configurações");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <AuthenticatedLayout>
@@ -492,15 +670,40 @@ const Settings = () => {
                 <CardTitle>Backup e Dados</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => handleExportData('all')}
+                  disabled={saving}
+                >
                   <Upload className="h-4 w-4 mr-2" />
                   Exportar Dados
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Camera className="h-4 w-4 mr-2" />
-                  Importar Dados
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
+                
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportData}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    disabled={saving}
+                  />
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    disabled={saving}
+                  >
+                    <Camera className="h-4 w-4 mr-2" />
+                    Importar Dados
+                  </Button>
+                </div>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={handleAutomaticBackup}
+                  disabled={saving}
+                >
                   <Save className="h-4 w-4 mr-2" />
                   Backup Automático
                 </Button>
@@ -512,15 +715,30 @@ const Settings = () => {
                 <CardTitle>Sistema</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start" onClick={() => console.log('Abrindo logs do sistema...')}>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start" 
+                  onClick={handleSystemLogs}
+                  disabled={saving}
+                >
                   <SettingsIcon className="h-4 w-4 mr-2" />
                   Logs do Sistema
                 </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => console.log('Limpando cache...')}>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start" 
+                  onClick={handleClearCache}
+                  disabled={saving}
+                >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Limpar Cache
                 </Button>
-                <Button variant="destructive" className="w-full justify-start" onClick={() => console.log('Reset configurações...')}>
+                <Button 
+                  variant="destructive" 
+                  className="w-full justify-start" 
+                  onClick={handleResetSettings}
+                  disabled={saving}
+                >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Reset Configurações
                 </Button>
