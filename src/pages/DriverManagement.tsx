@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
-import { 
+import {
   Users, 
   Plus, 
   Search, 
@@ -223,7 +222,7 @@ export default function DriverManagement() {
   );
 
   return (
-    <AuthenticatedLayout>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -395,6 +394,6 @@ export default function DriverManagement() {
           onDriverCreated={handleDriverCreated}
         />
       </div>
-    </AuthenticatedLayout>
+    </div>
   );
 }

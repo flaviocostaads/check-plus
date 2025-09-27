@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { Plus, Edit, Trash2, Car, Bike, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -157,7 +156,7 @@ const ChecklistManagement = () => {
   const motoTemplates = templates.filter(t => t.vehicle_type === 'moto');
 
   return (
-    <AuthenticatedLayout>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-primary">Gerenciamento de Checklist</h1>
@@ -385,8 +384,8 @@ const ChecklistManagement = () => {
           </CardContent>
         </Card>
       </div>
+      </div>
     </div>
-    </AuthenticatedLayout>
   );
 };
 

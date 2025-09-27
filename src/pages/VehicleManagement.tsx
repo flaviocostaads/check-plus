@@ -12,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { VehicleType } from "@/types/inspection";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 
 interface Vehicle {
   id: string;
@@ -206,7 +205,7 @@ const VehicleManagement = () => {
   };
 
   return (
-    <AuthenticatedLayout>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <div className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -498,7 +497,7 @@ const VehicleManagement = () => {
           </CardContent>
         </Card>
       </div>
-    </AuthenticatedLayout>
+    </div>
   );
 };
 

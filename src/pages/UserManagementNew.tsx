@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 import { Link } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -267,7 +266,7 @@ export default function UserManagementNew() {
 
   if (!canCreateUsers) {
     return (
-      <AuthenticatedLayout>
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Acesso Negado</h1>
@@ -282,12 +281,12 @@ export default function UserManagementNew() {
             </Link>
           </div>
         </div>
-      </AuthenticatedLayout>
+      </div>
     );
   }
 
   return (
-    <AuthenticatedLayout>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -569,6 +568,6 @@ export default function UserManagementNew() {
           </CardContent>
         </Card>
       </div>
-    </AuthenticatedLayout>
+    </div>
   );
 }

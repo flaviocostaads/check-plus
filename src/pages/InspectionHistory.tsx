@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
-import { Eye, Download, Trash2, Car, Bike, Filter, Search, ArrowLeft } from "lucide-react";
+import { Eye, Download, Trash2, Car, Bike, Filter, Search, ArrowLeft, ClipboardList } from "lucide-react";
 import ReportViewer from "@/components/ReportViewer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -322,24 +321,33 @@ export const InspectionHistory = () => {
   };
 
   return (
-    <AuthenticatedLayout>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <div className="max-w-7xl mx-auto space-y-6 p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        {/* Header - Mobile Responsive */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
             <Link to="/dashboard">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar ao Dashboard
+                <span className="hidden sm:inline">Voltar ao Dashboard</span>
+                <span className="sm:hidden">Voltar</span>
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-primary mb-2">Histórico de Inspeções</h1>
-              <p className="text-muted-foreground">Consulte o histórico completo de inspeções realizadas</p>
+              <h1 className="text-xl sm:text-3xl font-bold text-primary flex items-center gap-2">
+                <ClipboardList className="h-6 w-6 sm:h-8 sm:w-8" />
+                <span className="hidden sm:inline">Histórico de Inspeções</span>
+                <span className="sm:hidden">Histórico</span>
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                <span className="hidden sm:inline">Consulte o histórico completo de inspeções realizadas</span>
+                <span className="sm:hidden">Histórico de inspeções</span>
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Filtros de Busca */}
+        {/* Filtros de Busca - Mobile Responsive */}
         <Card className="p-4">
           <div className="flex items-center gap-4 mb-4">
             <div className="flex items-center gap-2">
@@ -347,7 +355,7 @@ export const InspectionHistory = () => {
               <span className="text-sm font-medium">Filtros:</span>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="relative">
               <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
               <Input
@@ -369,6 +377,7 @@ export const InspectionHistory = () => {
                 setSearchTerm("");
                 setDateFilter("");
               }}
+              className="w-full lg:w-auto"
             >
               Limpar Filtros
             </Button>
@@ -376,8 +385,8 @@ export const InspectionHistory = () => {
         </Card>
 
         <Card>
-          <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Relatórios de Inspeção</h2>
+          <div className="p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">Relatórios de Inspeção</h2>
             
             {loading ? (
               <div className="text-center py-8">
@@ -388,30 +397,21 @@ export const InspectionHistory = () => {
                 Nenhuma inspeção encontrada
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Data/Hora</TableHead>
-                      <TableHead>Veículo</TableHead>
-                      <TableHead>Placa</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Motorista</TableHead>
-                      <TableHead>CPF</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredInspections.map((inspection) => (
-                      <TableRow key={inspection.id}>
-                        <TableCell className="font-medium">
-                          {formatDate(inspection.created_at)}
-                        </TableCell>
-                        <TableCell>{inspection.vehicles.marca_modelo}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{inspection.vehicles.placa}</Badge>
-                        </TableCell>
-                        <TableCell>
+              <>
+                {/* Mobile View - Cards */}
+                <div className="block sm:hidden space-y-4">
+                  {filteredInspections.map((inspection) => (
+                    <Card key={inspection.id} className="border border-border/50">
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <Badge variant="outline" className="text-sm font-medium mb-2">
+                              {inspection.vehicles.placa}
+                            </Badge>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDate(inspection.created_at)}
+                            </p>
+                          </div>
                           <Badge variant={inspection.vehicles.vehicle_type === "carro" ? "default" : "secondary"}>
                             {inspection.vehicles.vehicle_type === "carro" ? (
                               <><Car className="h-3 w-3 mr-1" />Carro</>
@@ -419,15 +419,19 @@ export const InspectionHistory = () => {
                               <><Bike className="h-3 w-3 mr-1" />Moto</>
                             )}
                           </Badge>
-                        </TableCell>
-                        <TableCell>{inspection.driver_name}</TableCell>
-                        <TableCell>{inspection.driver_cpf}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm font-medium">{inspection.vehicles.marca_modelo}</p>
+                            <p className="text-xs text-muted-foreground">{inspection.driver_name}</p>
+                          </div>
+                          <div className="flex gap-1">
                             <ReportViewer reportId={inspection.id}>
                               <Button
                                 size="sm"
                                 variant="outline"
+                                className="h-8 w-8 p-0"
                                 title="Visualizar"
                               >
                                 <Eye className="h-3 w-3" />
@@ -436,6 +440,7 @@ export const InspectionHistory = () => {
                             <Button
                               size="sm"
                               variant="outline"
+                              className="h-8 w-8 p-0"
                               onClick={() => downloadPDF(inspection.id)}
                               title="Download PDF"
                             >
@@ -444,23 +449,94 @@ export const InspectionHistory = () => {
                             <Button
                               size="sm"
                               variant="destructive"
+                              className="h-8 w-8 p-0"
                               onClick={() => handleDelete(inspection.id)}
                               title="Excluir"
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
-                        </TableCell>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Desktop View - Table */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Data/Hora</TableHead>
+                        <TableHead>Veículo</TableHead>
+                        <TableHead>Placa</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Motorista</TableHead>
+                        <TableHead>CPF</TableHead>
+                        <TableHead>Ações</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredInspections.map((inspection) => (
+                        <TableRow key={inspection.id}>
+                          <TableCell className="font-medium">
+                            {formatDate(inspection.created_at)}
+                          </TableCell>
+                          <TableCell>{inspection.vehicles.marca_modelo}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{inspection.vehicles.placa}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={inspection.vehicles.vehicle_type === "carro" ? "default" : "secondary"}>
+                              {inspection.vehicles.vehicle_type === "carro" ? (
+                                <><Car className="h-3 w-3 mr-1" />Carro</>
+                              ) : (
+                                <><Bike className="h-3 w-3 mr-1" />Moto</>
+                              )}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{inspection.driver_name}</TableCell>
+                          <TableCell>{inspection.driver_cpf}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <ReportViewer reportId={inspection.id}>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  title="Visualizar"
+                                >
+                                  <Eye className="h-3 w-3" />
+                                </Button>
+                              </ReportViewer>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => downloadPDF(inspection.id)}
+                                title="Download PDF"
+                              >
+                                <Download className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDelete(inspection.id)}
+                                title="Excluir"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             )}
           </div>
         </Card>
       </div>
-    </AuthenticatedLayout>
+    </div>
   );
 };
 

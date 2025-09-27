@@ -17,3 +17,26 @@ export function useIsMobile() {
 
   return !!isMobile;
 }
+
+// Hook para detectar diferentes breakpoints
+export function useBreakpoint() {
+  const [breakpoint, setBreakpoint] = React.useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+
+  React.useEffect(() => {
+    const checkBreakpoint = () => {
+      if (window.innerWidth < 640) {
+        setBreakpoint('mobile');
+      } else if (window.innerWidth < 1024) {
+        setBreakpoint('tablet');
+      } else {
+        setBreakpoint('desktop');
+      }
+    };
+
+    checkBreakpoint();
+    window.addEventListener('resize', checkBreakpoint);
+    return () => window.removeEventListener('resize', checkBreakpoint);
+  }, []);
+
+  return breakpoint;
+}
