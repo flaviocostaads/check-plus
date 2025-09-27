@@ -38,15 +38,13 @@ export const AppHeader = ({
   const fetchCompanySettings = async () => {
     try {
       const { data, error } = await supabase
-        .from("company_settings")
-        .select("*")
-        .limit(1)
-        .single();
+        .rpc('get_company_settings');
 
-      if (error && error.code !== 'PGRST116') throw error;
-      if (data) setCompanySettings(data);
+      if (error) throw error;
+      if (data && data.length > 0) setCompanySettings(data[0]);
     } catch (error) {
       console.error("Erro ao buscar configurações:", error);
+      // Silently fail - don't show toast for header component
     }
   };
 

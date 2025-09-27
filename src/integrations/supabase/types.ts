@@ -641,6 +641,21 @@ export type Database = {
           status: string
         }[]
       }
+      get_company_settings: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          company_address: string
+          company_email: string
+          company_logo_url: string
+          company_name: string
+          company_phone: string
+          created_at: string
+          id: string
+          primary_color: string
+          secondary_color: string
+          updated_at: string
+        }[]
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -748,6 +763,29 @@ export type Database = {
       reset_system_configurations: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      save_company_settings: {
+        Args: {
+          p_company_address?: string
+          p_company_email?: string
+          p_company_logo_url?: string
+          p_company_name: string
+          p_company_phone?: string
+          p_primary_color?: string
+          p_secondary_color?: string
+        }
+        Returns: {
+          company_address: string
+          company_email: string
+          company_logo_url: string
+          company_name: string
+          company_phone: string
+          created_at: string
+          id: string
+          primary_color: string
+          secondary_color: string
+          updated_at: string
+        }[]
       }
       search_drivers_for_assignment: {
         Args: { search_term?: string }

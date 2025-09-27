@@ -19,10 +19,12 @@ import {
   Camera,
   Trash2,
   Plus,
-  ExternalLink
+  ExternalLink,
+  ArrowLeft
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 interface CompanySettings {
   id: string;
@@ -69,20 +71,21 @@ const Settings = () => {
 
   const fetchSettings = async () => {
     try {
+      // Use the new secure function to get company settings
       const { data, error } = await supabase
-        .from("company_settings")
-        .select("*")
-        .limit(1)
-        .single();
+        .rpc('get_company_settings');
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       
-      if (data) {
-        setCompanySettings(data);
+      if (data && data.length > 0) {
+        setCompanySettings(data[0]);
       }
     } catch (error) {
       console.error("Erro ao buscar configurações:", error);
-      toast.error("Erro ao carregar configurações");
+      // Don't show error toast for empty results, just log it
+      if (error.message?.includes('permission denied')) {
+        toast.error("Erro ao carregar configurações");
+      }
     } finally {
       setLoading(false);
     }
@@ -105,29 +108,21 @@ const Settings = () => {
   const handleSaveCompanySettings = async () => {
     setSaving(true);
     try {
-      const settingsToSave = { ...companySettings };
+      const { data, error } = await supabase
+        .rpc('save_company_settings', {
+          p_company_name: companySettings.company_name,
+          p_company_logo_url: companySettings.company_logo_url || null,
+          p_company_address: companySettings.company_address || null,
+          p_company_phone: companySettings.company_phone || null,
+          p_company_email: companySettings.company_email || null,
+          p_primary_color: companySettings.primary_color,
+          p_secondary_color: companySettings.secondary_color
+        });
+
+      if (error) throw error;
       
-      // Remove empty ID to let the database generate one
-      if (!settingsToSave.id || settingsToSave.id === "") {
-        delete (settingsToSave as any).id;
-      }
-
-      if (companySettings.id && companySettings.id !== "") {
-        const { error } = await supabase
-          .from("company_settings")
-          .update(settingsToSave)
-          .eq("id", companySettings.id);
-
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from("company_settings")
-          .insert([settingsToSave])
-          .select()
-          .single();
-
-        if (error) throw error;
-        setCompanySettings(data);
+      if (data && data.length > 0) {
+        setCompanySettings(data[0]);
       }
 
       toast.success("Configurações salvas com sucesso!");
@@ -402,13 +397,24 @@ const Settings = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="bg-gradient-to-r from-primary to-primary-glow p-2 rounded-xl">
-          <SettingsIcon className="h-6 w-6 text-white" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold text-primary">Configurações</h1>
-          <p className="text-muted-foreground">Gerencie as configurações do sistema</p>
+      {/* Header com botão de retorno */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Link to="/dashboard">
+            <Button variant="outline" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Voltar ao Dashboard
+            </Button>
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-r from-primary to-primary-glow p-2 rounded-xl">
+              <SettingsIcon className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-primary">Configurações</h1>
+              <p className="text-muted-foreground">Gerencie as configurações do sistema</p>
+            </div>
+          </div>
         </div>
       </div>
 
