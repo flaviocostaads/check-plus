@@ -546,6 +546,33 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_driver_full_data: {
+        Args: { driver_id: string }
+        Returns: {
+          avatar_url: string
+          cnh_numero: string
+          cnh_validade: string
+          cpf: string
+          created_at: string
+          email: string
+          endereco: string
+          id: string
+          is_active: boolean
+          nome_completo: string
+          telefone: string
+          updated_at: string
+        }[]
+      }
+      get_drivers_basic_info: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string
+          created_at: string
+          id: string
+          is_active: boolean
+          nome_completo: string
+        }[]
+      }
       get_drivers_operator_view: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -606,9 +633,21 @@ export type Database = {
         Args: { cpf: string }
         Returns: boolean
       }
+      validate_driver_access_permission: {
+        Args: { operation_type: string }
+        Returns: boolean
+      }
       validate_password_strength: {
         Args: { password: string }
         Returns: boolean
+      }
+      validate_security_setup: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          check_name: string
+          details: string
+          status: string
+        }[]
       }
     }
     Enums: {
