@@ -236,17 +236,17 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
           </div>
         ) : inspection ? (
           <div className="space-y-6 print-area">
-            {/* Cabeçalho com Logo */}
+            {/* Cabeçalho com Logo e Dados da Empresa */}
             <Card>
-              <CardHeader className="text-center border-b p-4">
+              <CardHeader className="text-center p-4">
                 {/* Logo centralizada */}
                 <div className="flex justify-center mb-4">
                   <img src={nsaLogo} alt="NSA Logo" className="h-16 w-auto" />
                 </div>
                 
                 {/* Dados da empresa */}
-                <div className="space-y-2 mb-4">
-                  <h2 className="text-lg sm:text-xl font-bold">NORTE SECURITY ADVANCED LTDA</h2>
+                <div className="space-y-2">
+                  <h2 className="text-lg sm:text-xl font-bold">NORTE SECURITY ADVANCED</h2>
                   <p className="text-sm text-muted-foreground">CNPJ: 41.537.956/0001-04</p>
                   <div className="text-xs text-muted-foreground space-y-1">
                     <p>Quadra Aço 90 (901 Sul) Alameda 17, SN</p>
@@ -254,9 +254,14 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
                     <p>Plano Diretor Sul - Palmas/TO - CEP: 77017-266</p>
                   </div>
                 </div>
-                
+              </CardHeader>
+            </Card>
+
+            {/* Informações do Relatório */}
+            <Card>
+              <CardHeader className="text-center p-4">
                 {/* Título do relatório */}
-                <CardTitle className="text-center text-base sm:text-lg font-bold mb-2">
+                <CardTitle className="text-center text-base sm:text-lg font-bold mb-3">
                   RELATÓRIO DE INSPEÇÃO VEICULAR
                 </CardTitle>
                 
