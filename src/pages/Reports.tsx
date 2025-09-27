@@ -14,7 +14,6 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import ReportViewer from "@/components/ReportViewer";
-import ReportGenerator from "@/components/ReportGenerator";
 
 interface ReportData {
   id: string;
@@ -165,56 +164,183 @@ export const Reports = () => {
           )
         `)
         .eq("id", reportId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        toast({
+          title: "Erro",
+          description: "Relatório não encontrado",
+          variant: "destructive"
+        });
+        return;
+      }
 
-      // Transform data to match ReportGenerator interface
-      const inspectionData = {
-        id: data.id,
-        createdAt: new Date(data.created_at),
-        vehicleData: {
-          marca_modelo: data.vehicles.marca_modelo,
-          placa: data.vehicles.placa,
-          cor: data.vehicles.cor,
-          ano: data.vehicles.ano,
-          renavam: data.vehicles.renavam,
-          km_atual: data.vehicles.km_atual || "N/A"
-        },
-        driverData: {
-          nome_completo: data.driver_name,
-          cpf: data.driver_cpf,
-          cnh_numero: data.driver_cnh,
-          cnh_validade: data.driver_cnh_validade
-        },
-        checklistItems: data.inspection_items?.map((item: any) => ({
-          id: item.id,
-          name: item.checklist_templates.name,
-          status: item.status,
-          observations: item.observations,
-          photos: item.inspection_photos?.map((p: any) => p.photo_url) || []
-        })) || []
-      };
-
-      // Create a temporary ReportGenerator to trigger download
-      const tempDiv = document.createElement('div');
-      tempDiv.style.display = 'none';
-      document.body.appendChild(tempDiv);
-      
-      // Import ReportGenerator dynamically and trigger PDF generation
-      const { default: ReportGenerator } = await import('@/components/ReportGenerator');
-      
-      // Simulate the PDF generation
-      const generator = new (ReportGenerator as any)({ 
-        inspection: inspectionData 
-      });
-      
-      // Trigger PDF generation directly
-      generator.generatePDF();
-      
-      document.body.removeChild(tempDiv);
+      // Generate PDF directly using jsPDF
+      await generateReportPDF(data);
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar PDF do relatório",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const generateReportPDF = async (inspectionData: any) => {
+    const { default: jsPDF } = await import('jspdf');
+    const pdf = new jsPDF();
+
+    try {
+      // Company header
+      pdf.setFontSize(16);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('NORTE SECURITY ADVANCED LTDA', 20, 20);
+      
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'normal');
+      pdf.text('CNPJ: 41.537.956/0001-04', 20, 27);
+      pdf.text('Quadra Aço 90 (901 Sul) Alameda 17, SN - Sala 02 Quadra06 Lote 03', 20, 32);
+      pdf.text('Plano Diretor Sul - Palmas/TO - CEP: 77017-266', 20, 37);
+      
+      // Title
+      pdf.setFontSize(18);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('RELATÓRIO DE INSPEÇÃO VEICULAR', 20, 50);
+      
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, 'normal');
+      const createdAt = new Date(inspectionData.created_at);
+      pdf.text(`Data: ${createdAt.toLocaleDateString('pt-BR')} às ${createdAt.toLocaleTimeString('pt-BR')}`, 20, 60);
+      pdf.text(`ID: ${inspectionData.id.slice(0, 8)}`, 120, 60);
+
+      // Vehicle info section
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('DADOS DO VEÍCULO', 20, 75);
+      
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'normal');
+      pdf.text(`Marca/Modelo: ${inspectionData.vehicles.marca_modelo}`, 20, 85);
+      pdf.text(`Placa: ${inspectionData.vehicles.placa}`, 20, 92);
+      pdf.text(`Cor: ${inspectionData.vehicles.cor}`, 100, 85);
+      pdf.text(`Ano: ${inspectionData.vehicles.ano}`, 100, 92);
+      pdf.text(`Renavam: ${inspectionData.vehicles.renavam}`, 20, 99);
+      pdf.text(`KM Atual: ${inspectionData.vehicles.km_atual || "N/A"}`, 100, 99);
+
+      // Driver info section
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('DADOS DO CONDUTOR', 20, 115);
+      
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'normal');
+      pdf.text(`Nome Completo: ${inspectionData.driver_name}`, 20, 125);
+      pdf.text(`CPF: ${inspectionData.driver_cpf}`, 20, 132);
+      pdf.text(`CNH: ${inspectionData.driver_cnh}`, 100, 125);
+      pdf.text(`Validade CNH: ${inspectionData.driver_cnh_validade}`, 100, 132);
+
+      // Summary section
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('RESUMO DA INSPEÇÃO', 20, 150);
+      
+      const summary = {
+        ok: inspectionData.inspection_items?.filter((i: any) => i.status === 'ok').length || 0,
+        needs_replacement: inspectionData.inspection_items?.filter((i: any) => i.status === 'needs_replacement').length || 0,
+        observation: inspectionData.inspection_items?.filter((i: any) => i.status === 'observation').length || 0
+      };
+      
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, 'normal');
+      pdf.text(`✓ Itens OK: ${summary.ok}`, 30, 162);
+      pdf.text(`⚠ Trocar: ${summary.needs_replacement}`, 80, 162);
+      pdf.text(`👁 Observar: ${summary.observation}`, 130, 162);
+      
+      // Checklist items
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('ITENS VERIFICADOS DETALHADAMENTE', 20, 180);
+      
+      let yPosition = 190;
+      inspectionData.inspection_items?.forEach((item: any, index: number) => {
+        if (yPosition > 260) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+        
+        pdf.setFontSize(11);
+        pdf.setFont(undefined, 'bold');
+        const status = item.status === 'ok' ? 'OK ✓' : 
+                      item.status === 'needs_replacement' ? 'TROCAR ⚠' : 
+                      item.status === 'observation' ? 'OBSERVAR 👁' : 'N/A';
+        
+        pdf.text(`${index + 1}. ${item.checklist_templates.name}`, 20, yPosition);
+        pdf.text(`Status: ${status}`, 140, yPosition);
+        
+        if (item.observations) {
+          yPosition += 7;
+          pdf.setFontSize(9);
+          pdf.setFont(undefined, 'normal');
+          const maxWidth = 170;
+          const splitObs = pdf.splitTextToSize(`Observações: ${item.observations}`, maxWidth);
+          pdf.text(splitObs, 25, yPosition);
+          yPosition += splitObs.length * 4;
+        }
+        
+        if (item.inspection_photos && item.inspection_photos.length > 0) {
+          yPosition += 5;
+          pdf.setFontSize(8);
+          pdf.setFont(undefined, 'italic');
+          pdf.text(`Fotos anexadas: ${item.inspection_photos.length} foto(s)`, 25, yPosition);
+        }
+        
+        yPosition += 12;
+      });
+
+      // Signature area
+      if (yPosition > 230) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      
+      yPosition += 20;
+      
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('ASSINATURA E RESPONSABILIDADE', 20, yPosition);
+      
+      yPosition += 15;
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'normal');
+      pdf.text('Declaro que as informações contidas neste relatório são verdadeiras e que o veículo', 20, yPosition);
+      pdf.text('foi inspecionado conforme os padrões de segurança estabelecidos.', 20, yPosition + 7);
+      
+      yPosition += 25;
+      pdf.line(20, yPosition, 100, yPosition);
+      pdf.text('Assinatura do Motorista', 20, yPosition + 7);
+      pdf.text(inspectionData.driver_name, 20, yPosition + 15);
+      
+      pdf.line(120, yPosition, 190, yPosition);
+      pdf.text('Assinatura do Inspetor', 120, yPosition + 7);
+      pdf.text('NSA - Norte Security Advanced', 120, yPosition + 15);
+      
+      yPosition += 25;
+      pdf.setFontSize(8);
+      pdf.setFont(undefined, 'italic');
+      pdf.text(`Relatório gerado automaticamente em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 20, yPosition);
+      
+      // Save PDF
+      const fileName = `NSA_Inspecao_${inspectionData.vehicles.placa}_${createdAt.toLocaleDateString('pt-BR').replace(/\//g, '')}.pdf`;
+      pdf.save(fileName);
+      
+      toast({
+        title: "PDF Gerado",
+        description: "Relatório baixado com sucesso!"
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
       toast({
         title: "Erro",
         description: "Erro ao gerar PDF do relatório",

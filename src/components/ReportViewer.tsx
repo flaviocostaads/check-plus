@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { X, Download, FileText, Car, User, Calendar, MapPin } from "lucide-react";
+import { X, Download, FileText, Car, User, Calendar, MapPin, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -50,6 +50,15 @@ interface InspectionDetails {
       photo_url: string;
     }>;
   }>;
+  damage_markers?: Array<{
+    id: string;
+    description: string;
+    x_position: number;
+    y_position: number;
+    damage_marker_photos: Array<{
+      photo_url: string;
+    }>;
+  }>;
 }
 
 export default function ReportViewer({ reportId, children }: ReportViewerProps) {
@@ -71,12 +80,25 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
             *,
             checklist_templates (name, requires_photo),
             inspection_photos (photo_url)
+          ),
+          damage_markers (
+            *,
+            damage_marker_photos (photo_url)
           )
         `)
         .eq("id", reportId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) {
+        toast({
+          title: "Erro",
+          description: "Relatório não encontrado",
+          variant: "destructive"
+        });
+        return;
+      }
 
       setInspection(data);
     } catch (error) {
@@ -278,21 +300,119 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
                       </div>
                     </div>
                     {item.inspection_photos && item.inspection_photos.length > 0 && (
-                      <div className="flex gap-2 flex-wrap mt-3">
-                        {item.inspection_photos.map((photo, photoIndex) => (
-                          <img
-                            key={photoIndex}
-                            src={photo.photo_url}
-                            alt={`Foto ${photoIndex + 1}`}
-                            className="w-24 h-24 object-cover rounded border"
-                          />
-                        ))}
+                      <div className="mt-3">
+                        <p className="text-sm font-medium mb-2">Fotos do item ({item.inspection_photos.length}):</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {item.inspection_photos.map((photo, photoIndex) => (
+                            <div key={photoIndex} className="relative group">
+                              <img
+                                src={photo.photo_url}
+                                alt={`Foto ${photoIndex + 1} - ${item.checklist_templates.name}`}
+                                className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={() => window.open(photo.photo_url, '_blank')}
+                              />
+                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all rounded flex items-center justify-center">
+                                <Eye className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
                 ))}
               </CardContent>
             </Card>
+
+            {/* Fotos de Danos (se existirem) */}
+            {inspection.damage_markers && inspection.damage_markers.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Danos Identificados</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {inspection.damage_markers.map((marker: any, index: number) => (
+                    <div key={marker.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <p className="font-medium">Dano {index + 1}: {marker.description}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Posição: X: {marker.x_position}, Y: {marker.y_position}
+                          </p>
+                        </div>
+                      </div>
+                      {marker.damage_marker_photos && marker.damage_marker_photos.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-sm font-medium mb-2">Fotos do dano:</p>
+                          <div className="grid grid-cols-3 gap-2">
+                            {marker.damage_marker_photos.map((photo: any, photoIndex: number) => (
+                              <div key={photoIndex} className="relative group">
+                                <img
+                                  src={photo.photo_url}
+                                  alt={`Foto dano ${index + 1} - ${photoIndex + 1}`}
+                                  className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                  onClick={() => window.open(photo.photo_url, '_blank')}
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all rounded flex items-center justify-center">
+                                  <Eye className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Assinatura (se existir) */}
+            {inspection.signature_data && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Assinatura do Condutor</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="border rounded-lg p-4 bg-muted/20">
+                    <img 
+                      src={inspection.signature_data} 
+                      alt="Assinatura do condutor" 
+                      className="max-w-full h-32 object-contain mx-auto"
+                    />
+                    <p className="text-center text-sm text-muted-foreground mt-2">
+                      Assinado por: {inspection.driver_name}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Localização da Inspeção */}
+            {(inspection.latitude && inspection.longitude) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    Localização da Inspeção
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm">
+                    Latitude: {inspection.latitude}, Longitude: {inspection.longitude}
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2"
+                    onClick={() => window.open(`https://maps.google.com/?q=${inspection.latitude},${inspection.longitude}`, '_blank')}
+                  >
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Ver no Google Maps
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Botões de Ação */}
             <div className="flex justify-end gap-2 pt-4 border-t">
