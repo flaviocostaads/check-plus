@@ -107,64 +107,22 @@ export default function ReportGenerator({ inspection, onShare }: ReportGenerator
       pdf.text(`Nome Completo: ${inspection.driverData.nome_completo}`, 20, 126);
       pdf.text(`CNH: ${inspection.driverData.cnh_numero}`, 110, 126);
       
-      // Summary section with colored boxes
-      pdf.setFontSize(14);
-      pdf.setFont(undefined, 'bold');
-      pdf.setTextColor(41, 128, 185);
-      pdf.text('RESUMO DA INSPEÇÃO', 20, 150);
-      
-      const summary = {
-        ok: inspection.checklistItems.filter(i => i.status === 'ok').length,
-        needs_replacement: inspection.checklistItems.filter(i => i.status === 'needs_replacement').length,
-        observation: inspection.checklistItems.filter(i => i.status === 'observation').length
-      };
-      
-      // OK items box
-      pdf.setFillColor(46, 204, 113);
-      pdf.rect(25, 155, 45, 20, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(16);
-      pdf.setFont(undefined, 'bold');
-      pdf.text(`${summary.ok}`, 47, 167);
-      pdf.setFontSize(8);
-      pdf.text('ITENS OK', 40, 172);
-      
-      // Needs replacement box
-      pdf.setFillColor(231, 76, 60);
-      pdf.rect(80, 155, 45, 20, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(16);
-      pdf.setFont(undefined, 'bold');
-      pdf.text(`${summary.needs_replacement}`, 102, 167);
-      pdf.setFontSize(8);
-      pdf.text('TROCAR', 95, 172);
-      
-      // Observation box
-      pdf.setFillColor(241, 196, 15);
-      pdf.rect(135, 155, 45, 20, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(16);
-      pdf.setFont(undefined, 'bold');
-      pdf.text(`${summary.observation}`, 157, 167);
-      pdf.setFontSize(8);
-      pdf.text('OBSERVAR', 147, 172);
-      
-      // Reset text color
+      // Removed summary section as requested
       pdf.setTextColor(0, 0, 0);
       
       // Checklist items
-      pdf.setFontSize(14);
+      pdf.setFontSize(12);
       pdf.setFont(undefined, 'bold');
       pdf.setTextColor(41, 128, 185);
-      pdf.text('ITENS VERIFICADOS DETALHADAMENTE', 20, 190);
+      pdf.text('ITENS VERIFICADOS DETALHADAMENTE', 20, 150);
       
       pdf.setTextColor(0, 0, 0);
-      let yPosition = 200;
+      let yPosition = 160;
       
       for (let i = 0; i < inspection.checklistItems.length; i++) {
         const item = inspection.checklistItems[i];
         
-        if (yPosition > 250) {
+        if (yPosition > 260) {
           pdf.addPage();
           yPosition = 30;
         }
@@ -175,7 +133,7 @@ export default function ReportGenerator({ inspection, onShare }: ReportGenerator
                        item.status === 'observation' ? [255, 248, 225] : [245, 245, 245];
         
         pdf.setFillColor(bgColor[0], bgColor[1], bgColor[2]);
-        pdf.rect(15, yPosition - 5, 180, 15, 'F');
+        pdf.rect(15, yPosition - 3, 180, 10, 'F');
         
         // Status indicator
         const statusColor = item.status === 'ok' ? [46, 204, 113] : 
@@ -183,9 +141,9 @@ export default function ReportGenerator({ inspection, onShare }: ReportGenerator
                            item.status === 'observation' ? [241, 196, 15] : [128, 128, 128];
         
         pdf.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
-        pdf.rect(15, yPosition - 5, 5, 15, 'F');
+        pdf.rect(15, yPosition - 3, 5, 10, 'F');
         
-        pdf.setFontSize(10);
+        pdf.setFontSize(9);
         pdf.setFont(undefined, 'bold');
         pdf.text(`${i + 1}. ${item.name}`, 25, yPosition);
         
@@ -194,97 +152,25 @@ export default function ReportGenerator({ inspection, onShare }: ReportGenerator
                           item.status === 'observation' ? 'OBSERVAR 👁' : 'N/A';
         
         pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
-        pdf.text(statusText, 155, yPosition);
+        pdf.text(statusText, 155, yPosition); // Removed "Status:" label
         pdf.setTextColor(0, 0, 0);
         
-        yPosition += 8;
+        yPosition += 6;
         
         if (item.observations) {
-          pdf.setFontSize(9);
+          pdf.setFontSize(8);
           pdf.setFont(undefined, 'normal');
           pdf.setTextColor(100, 100, 100);
           const maxWidth = 165;
           const splitObs = pdf.splitTextToSize(`Obs: ${item.observations}`, maxWidth);
           pdf.text(splitObs, 25, yPosition);
-          yPosition += splitObs.length * 4;
+          yPosition += splitObs.length * 3;
           pdf.setTextColor(0, 0, 0);
         }
         
-        // Add photos if they exist
-        if (item.photos && item.photos.length > 0) {
-          yPosition += 5;
-          
-          for (let j = 0; j < item.photos.length; j++) {
-            const photo = item.photos[j];
-            
-            try {
-              if (yPosition > 220) {
-                pdf.addPage();
-                yPosition = 30;
-              }
-              
-              // Create image element to load the photo
-              const photoImg = new Image();
-              photoImg.crossOrigin = "anonymous";
-              
-              await new Promise((resolve, reject) => {
-                photoImg.onload = () => {
-                  try {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    // Calculate dimensions maintaining aspect ratio
-                    const maxWidth = 80;
-                    const maxHeight = 60;
-                    
-                    let { width, height } = photoImg;
-                    const aspectRatio = width / height;
-                    
-                    if (width > maxWidth) {
-                      width = maxWidth;
-                      height = width / aspectRatio;
-                    }
-                    if (height > maxHeight) {
-                      height = maxHeight;
-                      width = height * aspectRatio;
-                    }
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(photoImg, 0, 0, width, height);
-                    
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    pdf.addImage(dataUrl, 'JPEG', 25, yPosition, width, height);
-                    
-                    pdf.setFontSize(8);
-                    pdf.setFont(undefined, 'italic');
-                    pdf.setTextColor(100, 100, 100);
-                    pdf.text(`Foto ${j + 1}/${item.photos.length}`, 25, yPosition + height + 5);
-                    pdf.setTextColor(0, 0, 0);
-                    
-                    resolve(null);
-                  } catch (err) {
-                    resolve(null); // Continue even if image fails
-                  }
-                };
-                photoImg.onerror = () => resolve(null); // Continue even if image fails to load
-                photoImg.src = photo;
-              });
-              
-              yPosition += 70; // Space for image + caption
-            } catch (err) {
-              // If image loading fails, just show text
-              pdf.setFontSize(8);
-              pdf.setFont(undefined, 'italic');
-              pdf.setTextColor(150, 150, 150);
-              pdf.text(`[Foto ${j + 1}: Não foi possível carregar]`, 25, yPosition);
-              pdf.setTextColor(0, 0, 0);
-              yPosition += 8;
-            }
-          }
-        }
+        // Photos removed as requested
         
-        yPosition += 10;
+        yPosition += 5; // Reduced space between items
       }
       
       // Signature area

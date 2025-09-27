@@ -1,0 +1,118 @@
+/* Print styles for inspection reports */
+@media print {
+  /* Hide elements that shouldn't be printed */
+  .no-print,
+  button,
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* Force print all pages */
+  body * {
+    visibility: hidden;
+  }
+
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Page breaks */
+  .page-break {
+    page-break-before: always;
+  }
+
+  /* Card styling for print */
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    page-break-inside: avoid;
+    margin-bottom: 10px;
+  }
+
+  /* Hide photos section for print */
+  .photo-section {
+    display: none !important;
+  }
+
+  /* Compact layout for checklist items */
+  .checklist-item {
+    margin-bottom: 5px !important;
+    padding: 5px !important;
+    border-bottom: 1px solid #eee;
+  }
+
+  /* Typography adjustments */
+  h1, h2, h3 {
+    font-size: 16px !important;
+    margin-bottom: 5px !important;
+  }
+
+  .text-sm {
+    font-size: 12px !important;
+  }
+
+  .text-xs {
+    font-size: 10px !important;
+  }
+
+  /* Grid adjustments */
+  .grid {
+    display: block !important;
+  }
+
+  .grid > div {
+    display: inline-block !important;
+    width: 48% !important;
+    margin-right: 2% !important;
+    vertical-align: top !important;
+  }
+
+  /* Signature section */
+  .signature-section {
+    page-break-inside: avoid;
+    margin-top: 20px;
+  }
+
+  /* Company header */
+  .company-header {
+    border-bottom: 2px solid #333 !important;
+    margin-bottom: 15px !important;
+    padding-bottom: 10px !important;
+  }
+
+  /* Status badges */
+  .status-ok::before {
+    content: "OK ✓";
+    background: #22c55e;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+
+  .status-trocar::before {
+    content: "TROCAR ⚠";
+    background: #ef4444;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+
+  .status-observar::before {
+    content: "OBSERVAR 👁";
+    background: #f59e0b;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+}

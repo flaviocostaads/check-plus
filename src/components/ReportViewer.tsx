@@ -121,11 +121,11 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "ok":
-        return <Badge className="bg-green-100 text-green-800">OK</Badge>;
+        return <Badge className={`bg-green-100 text-green-800 status-${status}`}>OK</Badge>;
       case "needs_replacement":
-        return <Badge className="bg-red-100 text-red-800">Trocar</Badge>;
+        return <Badge className={`bg-red-100 text-red-800 status-${status}`}>TROCAR</Badge>;
       case "observation":
-        return <Badge className="bg-yellow-100 text-yellow-800">Observar</Badge>;
+        return <Badge className={`bg-yellow-100 text-yellow-800 status-${status}`}>OBSERVAR</Badge>;
       default:
         return <Badge variant="secondary">N/A</Badge>;
     }
@@ -144,7 +144,71 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
   };
 
   const handlePrint = () => {
-    window.print();
+    // Create a new window with all the inspection content
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const printContent = document.querySelector('.print-area')?.cloneNode(true) as HTMLElement;
+    if (!printContent) return;
+
+    // Remove photos from print content
+    const photos = printContent.querySelectorAll('.photo-section, img[src*="photo"], .grid img');
+    photos.forEach(photo => photo.remove());
+
+    // Remove "Status:" labels from badges
+    const badges = printContent.querySelectorAll('.badge, [class*="badge"]');
+    badges.forEach(badge => {
+      if (badge.textContent) {
+        badge.textContent = badge.textContent.replace('Status:', '').trim();
+      }
+    });
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Relatório de Inspeção</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+            .company-header { text-align: center; border-bottom: 2px solid #333; margin-bottom: 20px; padding-bottom: 15px; }
+            .company-header h2 { margin: 0; font-size: 18px; }
+            .company-header p { margin: 5px 0; font-size: 12px; }
+            .section { margin-bottom: 20px; }
+            .section h3 { font-size: 14px; margin-bottom: 10px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+            .grid { display: flex; flex-wrap: wrap; gap: 10px; }
+            .grid > div { flex: 1; min-width: 200px; }
+            .field { margin-bottom: 8px; }
+            .field strong { font-size: 12px; }
+            .field span { font-size: 11px; color: #666; }
+            .checklist-item { border-bottom: 1px solid #eee; padding: 8px 0; display: flex; justify-content: space-between; align-items: flex-start; }
+            .checklist-item .name { font-size: 11px; font-weight: bold; flex: 1; }
+            .checklist-item .status { font-size: 10px; padding: 2px 6px; border-radius: 3px; color: white; }
+            .status-ok { background: #22c55e; }
+            .status-needs_replacement { background: #ef4444; }
+            .status-observation { background: #f59e0b; }
+            .signature-section { margin-top: 30px; display: flex; gap: 20px; }
+            .signature { flex: 1; text-align: center; }
+            .signature img { max-width: 150px; max-height: 60px; border: 1px solid #ddd; }
+            .signature p { font-size: 10px; margin-top: 5px; }
+            .observations { font-size: 10px; color: #666; margin-top: 3px; font-style: italic; }
+            @media print {
+              body { margin: 0; }
+              .page-break { page-break-before: always; }
+            }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
   };
 
   return (
@@ -171,7 +235,7 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
             <p className="text-muted-foreground">Carregando detalhes...</p>
           </div>
         ) : inspection ? (
-          <div className="space-y-6">
+          <div className="space-y-6 print-area">
             {/* Cabeçalho com Logo */}
             <Card>
               <CardHeader className="text-center border-b">
@@ -258,35 +322,7 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
               </CardContent>
             </Card>
 
-            {/* Resumo da Inspeção */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Resumo da Inspeção</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  {(() => {
-                    const summary = getStatusSummary();
-                    return (
-                      <>
-                        <div>
-                          <div className="text-2xl font-bold text-green-600">{summary.ok}</div>
-                          <div className="text-sm text-muted-foreground">Itens OK</div>
-                        </div>
-                        <div>
-                          <div className="text-2xl font-bold text-red-600">{summary.needs_replacement}</div>
-                          <div className="text-sm text-muted-foreground">Trocar</div>
-                        </div>
-                        <div>
-                          <div className="text-2xl font-bold text-yellow-600">{summary.observation}</div>
-                          <div className="text-sm text-muted-foreground">Observar</div>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </CardContent>
-            </Card>
+            {/* Resumo removido conforme solicitado */}
 
             {/* Checklist Detalhado */}
             <Card>
@@ -309,26 +345,7 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
                         {getStatusBadge(item.status)}
                       </div>
                     </div>
-                    {item.inspection_photos && item.inspection_photos.length > 0 && (
-                      <div className="mt-3">
-                        <p className="text-sm font-medium mb-2">Fotos do item ({item.inspection_photos.length}):</p>
-                        <div className="grid grid-cols-3 gap-2">
-                          {item.inspection_photos.map((photo, photoIndex) => (
-                            <div key={photoIndex} className="relative group">
-                              <img
-                                src={photo.photo_url}
-                                alt={`Foto ${photoIndex + 1} - ${item.checklist_templates.name}`}
-                                className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
-                                onClick={() => window.open(photo.photo_url, '_blank')}
-                              />
-                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all rounded flex items-center justify-center">
-                                <Eye className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    {/* Photos removed from print view as requested */}
                   </div>
                 ))}
               </CardContent>

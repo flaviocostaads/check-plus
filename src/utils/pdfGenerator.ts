@@ -198,58 +198,21 @@ export const generateInspectionPDF = async (inspectionData: PDFInspectionData) =
 
     yPosition += 15;
 
-    // Summary Section
-    const summary = {
-      ok: inspectionData.inspection_items?.filter(i => i.status === 'ok').length || 0,
-      needs_replacement: inspectionData.inspection_items?.filter(i => i.status === 'needs_replacement').length || 0,
-      observation: inspectionData.inspection_items?.filter(i => i.status === 'observation').length || 0
-    };
-
-    pdf.setFontSize(14);
-    pdf.setFont(undefined, 'bold');
-    pdf.text('RESUMO DA INSPEÇÃO', 20, yPosition);
-    
-    yPosition += 8;
-    pdf.setFontSize(11);
-    pdf.setFont(undefined, 'normal');
-    
-    // Summary in boxes
-    const boxWidth = 50;
-    const boxHeight = 12;
-    const spacing = 5;
-    
-    // OK box
-    pdf.setFillColor(34, 197, 94); // Green
-    pdf.rect(leftCol, yPosition, boxWidth, boxHeight, 'F');
-    pdf.setTextColor(255, 255, 255);
-    pdf.text(`✓ OK: ${summary.ok}`, leftCol + 2, yPosition + 7);
-    
-    // Needs replacement box
-    pdf.setFillColor(245, 158, 11); // Orange
-    pdf.rect(leftCol + boxWidth + spacing, yPosition, boxWidth, boxHeight, 'F');
-    pdf.text(`⚠ Trocar: ${summary.needs_replacement}`, leftCol + boxWidth + spacing + 2, yPosition + 7);
-    
-    // Observation box
-    pdf.setFillColor(239, 68, 68); // Red
-    pdf.rect(leftCol + 2 * (boxWidth + spacing), yPosition, boxWidth, boxHeight, 'F');
-    pdf.text(`👁 Observar: ${summary.observation}`, leftCol + 2 * (boxWidth + spacing) + 2, yPosition + 7);
-
-    pdf.setTextColor(0, 0, 0);
-    yPosition += boxHeight + 15;
+    // Removed summary section as requested
 
     // Detailed checklist items
-    pdf.setFontSize(14);
+    pdf.setFontSize(12);
     pdf.setFont(undefined, 'bold');
     pdf.text('ITENS VERIFICADOS DETALHADAMENTE', 20, yPosition);
-    yPosition += 10;
+    yPosition += 8;
 
     // Process each inspection item
     for (let index = 0; index < inspectionData.inspection_items.length; index++) {
       const item = inspectionData.inspection_items[index];
       
-      checkPageBreak(25); // Minimum space needed for an item
+      checkPageBreak(15); // Reduced space needed for an item
       
-      pdf.setFontSize(10);
+      pdf.setFontSize(9);
       pdf.setFont(undefined, 'bold');
       
       const statusText = item.status === 'ok' ? 'OK ✓' : 
@@ -257,51 +220,20 @@ export const generateInspectionPDF = async (inspectionData: PDFInspectionData) =
                         item.status === 'observation' ? 'OBSERVAR 👁' : 'N/A';
       
       pdf.text(`${index + 1}. ${item.checklist_templates.name}`, leftCol, yPosition);
-      pdf.text(`Status: ${statusText}`, 140, yPosition);
-      yPosition += 6;
+      pdf.text(statusText, 140, yPosition); // Removed "Status:" label
+      yPosition += 5;
       
       // Observations
       if (item.observations) {
-        pdf.setFontSize(9);
+        pdf.setFontSize(8);
         pdf.setFont(undefined, 'normal');
         const maxWidth = 170;
         const splitObs = pdf.splitTextToSize(`Observações: ${item.observations}`, maxWidth);
         pdf.text(splitObs, leftCol + 5, yPosition);
-        yPosition += splitObs.length * 4 + 2;
+        yPosition += splitObs.length * 3 + 1;
       }
       
-      // Photos
-      if (item.inspection_photos && item.inspection_photos.length > 0) {
-        checkPageBreak(40); // Space needed for photos
-        
-        pdf.setFontSize(8);
-        pdf.setFont(undefined, 'italic');
-        pdf.text(`Fotos (${item.inspection_photos.length}):`, leftCol + 5, yPosition);
-        yPosition += 4;
-        
-        // Add photos in a grid
-        const photoWidth = 30;
-        const photoHeight = 25;
-        const photosPerRow = 4;
-        
-        for (let photoIndex = 0; photoIndex < Math.min(item.inspection_photos.length, 4); photoIndex++) {
-          const photo = item.inspection_photos[photoIndex];
-          const col = photoIndex % photosPerRow;
-          const photoX = leftCol + 10 + (col * (photoWidth + 5));
-          
-          await addImageToPDF(photo.photo_url, photoX, yPosition, photoWidth, photoHeight);
-        }
-        
-        yPosition += photoHeight + 5;
-        
-        if (item.inspection_photos.length > 4) {
-          pdf.setFontSize(8);
-          pdf.text(`+ ${item.inspection_photos.length - 4} fotos adicionais`, leftCol + 10, yPosition);
-          yPosition += 4;
-        }
-      }
-      
-      yPosition += 8; // Space between items
+      yPosition += 4; // Reduced space between items
     }
 
     // Damage markers section
