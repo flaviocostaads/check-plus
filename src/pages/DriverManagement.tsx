@@ -72,11 +72,8 @@ export default function DriverManagement() {
       let data;
 
       if (userData?.role === 'admin') {
-        // Admin access - direct query with full data
-        const { data: adminData, error } = await supabase
-          .from('drivers')
-          .select('*')
-          .order('created_at', { ascending: false });
+        // Admin access - use secure view function
+        const { data: adminData, error } = await supabase.rpc('get_drivers_secure_view');
 
         if (error) {
           console.error('Database error:', error);
@@ -86,12 +83,8 @@ export default function DriverManagement() {
         
         data = adminData || [];
       } else {
-        // Operator access - direct query with masked data
-        const { data: operatorData, error } = await supabase
-          .from('drivers')
-          .select('id, nome_completo, cpf, cnh_numero, cnh_validade, telefone, avatar_url, is_active, created_at, updated_at')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
+        // Operator access - use operator view function
+        const { data: operatorData, error } = await supabase.rpc('get_drivers_operator_view');
 
         if (error) {
           console.error('Database error:', error);
@@ -99,14 +92,14 @@ export default function DriverManagement() {
           return;
         }
         
-        // Map the data with masking for operators
+        // Map the function response to match our interface
         data = (operatorData || []).map(driver => ({
           id: driver.id,
           nome_completo: driver.nome_completo,
-          cpf: driver.cpf ? driver.cpf.substring(0, 3) + '.***.***-**' : '***.***.***-**',
-          cnh_numero: driver.cnh_numero ? driver.cnh_numero.substring(0, 3) + '********' : '***********',
+          cpf: driver.cpf_masked,
+          cnh_numero: driver.cnh_numero_masked,
           cnh_validade: driver.cnh_validade,
-          telefone: driver.telefone ? driver.telefone.substring(0, 2) + '*****-****' : null,
+          telefone: driver.telefone_masked,
           email: '', // Not available in operator view
           endereco: '', // Not available in operator view
           avatar_url: driver.avatar_url,
@@ -194,6 +187,18 @@ export default function DriverManagement() {
     if (!confirm("Tem certeza que deseja excluir este motorista?")) return;
 
     try {
+      // Check if user is admin first
+      const { data: userData } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      if (userData?.role !== 'admin') {
+        toast.error("Apenas administradores podem excluir motoristas.");
+        return;
+      }
+
       const { error } = await supabase
         .from('drivers')
         .delete()
