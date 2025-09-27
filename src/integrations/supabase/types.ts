@@ -663,7 +663,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           avatar_url: string
-          created_at: string
           id: string
           is_active: boolean
           nome_completo: string

@@ -5,7 +5,6 @@ import { ArrowLeft, Car, User, CheckCircle } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import VehicleListSelector from "@/components/VehicleListSelector";
 import DriverSelector from "@/components/DriverSelector";
-import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
 
 interface Vehicle {
   id: string;
@@ -66,8 +65,7 @@ export default function NewInspection() {
   };
 
   return (
-    <AuthenticatedLayout>
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Header */}
         <div className="flex items-start sm:items-center gap-3 sm:gap-4 mb-6">
           <Link to="/dashboard">
@@ -186,6 +184,5 @@ export default function NewInspection() {
           )}
         </div>
       </div>
-    </AuthenticatedLayout>
-  );
-}
+    );
+  }

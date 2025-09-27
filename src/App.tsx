@@ -40,7 +40,7 @@ const App = () => (
             <Route path="/drivers" element={<AuthenticatedLayout><DriverManagement /></AuthenticatedLayout>} />
             <Route path="/users" element={<AuthenticatedLayout><UserManagement /></AuthenticatedLayout>} />
             <Route path="/user-management" element={<AuthenticatedLayout><UserManagementNew /></AuthenticatedLayout>} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings" element={<AuthenticatedLayout><Settings /></AuthenticatedLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

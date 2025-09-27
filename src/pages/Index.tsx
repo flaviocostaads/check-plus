@@ -111,9 +111,7 @@ const Index = () => {
   return (
     <>
       {currentStep === 'dashboard' && user && (
-        <AuthenticatedLayout>
-          <Dashboard onNewInspection={handleNewInspection} />
-        </AuthenticatedLayout>
+        <Dashboard onNewInspection={handleNewInspection} />
       )}
       
       {currentStep === 'selector' && (
