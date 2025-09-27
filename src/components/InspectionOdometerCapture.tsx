@@ -9,6 +9,7 @@ interface InspectionOdometerCaptureProps {
   onBack: () => void;
 }
 
+// Simplified odometer capture component (camera functionality temporarily removed)
 export default function InspectionOdometerCapture({ onNext, onBack }: InspectionOdometerCaptureProps) {
   const [reading, setReading] = useState("");
   const [loading, setLoading] = useState(false);
