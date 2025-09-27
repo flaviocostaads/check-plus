@@ -6,6 +6,7 @@ import { InspectionData } from "@/types/inspection";
 import { toast } from "sonner";
 import jsPDF from 'jspdf';
 import nsaLogo from "@/assets/nsa-logo.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ReportGeneratorProps {
   inspection: InspectionData;
@@ -295,7 +296,7 @@ export default function ReportGenerator({ inspection, onShare }: ReportGenerator
       }
       
       pdf.setFillColor(245, 245, 245);
-      pdf.rect(15, yPosition, 180, 50, 'F');
+      pdf.rect(15, yPosition, 180, 60, 'F');
       
       pdf.setFontSize(12);
       pdf.setFont(undefined, 'bold');
@@ -308,11 +309,38 @@ export default function ReportGenerator({ inspection, onShare }: ReportGenerator
       pdf.text('Declaro que as informações contidas neste relatório são verdadeiras e que', 20, yPosition + 20);
       pdf.text('o veículo foi inspecionado conforme os padrões de segurança estabelecidos.', 20, yPosition + 25);
       
-      // Signature lines
+      // Driver signature area
       yPosition += 35;
       pdf.setLineWidth(0.5);
       pdf.setDrawColor(100, 100, 100);
       pdf.line(20, yPosition, 90, yPosition);
+      
+      // Add actual driver signature if available
+      if (inspection.signature) {
+        try {
+          // Create a small canvas to render the signature
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = 200;
+          canvas.height = 60;
+          
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = () => {
+              ctx.drawImage(img, 0, 0, 200, 60);
+              const dataUrl = canvas.toDataURL('image/png', 0.8);
+              pdf.addImage(dataUrl, 'PNG', 20, yPosition - 20, 70, 18);
+              resolve(null);
+            };
+            img.onerror = () => resolve(null); // Continue without signature if failed
+            img.src = inspection.signature;
+          });
+        } catch (error) {
+          console.log('Could not load signature:', error);
+        }
+      }
+      
+      // Inspector signature area  
       pdf.line(105, yPosition, 175, yPosition);
       
       pdf.setFontSize(8);
@@ -321,7 +349,11 @@ export default function ReportGenerator({ inspection, onShare }: ReportGenerator
       
       pdf.setFont(undefined, 'bold');
       pdf.text(inspection.driverData.nome_completo, 20, yPosition + 10);
-      pdf.text('NSA - Norte Security Advanced', 105, yPosition + 10);
+      
+      // Get inspector name - for now use company name since we don't have inspector_id in the type
+      let inspectorName = 'NSA - Norte Security Advanced';
+      
+      pdf.text(inspectorName, 105, yPosition + 10);
       
       // Footer
       pdf.setFontSize(7);

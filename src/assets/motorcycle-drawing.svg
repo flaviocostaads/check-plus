@@ -1,0 +1,34 @@
+<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rear wheel -->
+  <circle cx="100" cy="180" r="35" fill="none" stroke="currentColor" stroke-width="4"/>
+  <circle cx="100" cy="180" r="15" fill="none" stroke="currentColor" stroke-width="2"/>
+  
+  <!-- Front wheel -->
+  <circle cx="300" cy="180" r="35" fill="none" stroke="currentColor" stroke-width="4"/>
+  <circle cx="300" cy="180" r="15" fill="none" stroke="currentColor" stroke-width="2"/>
+  
+  <!-- Frame -->
+  <path d="M 100 180 L 140 120 L 180 100 L 220 120 L 260 140 L 300 180" fill="none" stroke="currentColor" stroke-width="3"/>
+  
+  <!-- Seat -->
+  <path d="M 140 120 L 200 110 L 240 115 L 260 125" fill="none" stroke="currentColor" stroke-width="4"/>
+  
+  <!-- Handlebars -->
+  <path d="M 270 140 L 290 120 L 310 140" fill="none" stroke="currentColor" stroke-width="3"/>
+  <circle cx="290" cy="120" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+  
+  <!-- Engine -->
+  <rect x="160" y="140" width="60" height="40" rx="5" fill="none" stroke="currentColor" stroke-width="3"/>
+  
+  <!-- Exhaust -->
+  <path d="M 180 180 L 170 190 L 140 195 L 120 200" fill="none" stroke="currentColor" stroke-width="3"/>
+  
+  <!-- Tank -->
+  <ellipse cx="200" cy="95" rx="30" ry="15" fill="none" stroke="currentColor" stroke-width="3"/>
+  
+  <!-- Headlight -->
+  <circle cx="320" cy="130" r="12" fill="none" stroke="currentColor" stroke-width="3"/>
+  
+  <!-- Taillight -->
+  <circle cx="80" cy="160" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+</svg>

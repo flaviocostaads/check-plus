@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AuthenticatedLayout } from "@/components/AuthenticatedLayout";
-import { ArrowLeft, Download, Printer, FileText, Filter, Calendar, Car, Eye } from "lucide-react";
+import { ArrowLeft, Download, Printer, FileText, Filter, Calendar, Car, Eye, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
@@ -349,6 +349,33 @@ export const Reports = () => {
     }
   };
 
+  const deleteReport = async (reportId: string) => {
+    if (!confirm("Tem certeza que deseja excluir este relatório?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("inspections")
+        .delete()
+        .eq("id", reportId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Relatório excluído com sucesso!"
+      });
+      
+      fetchReports();
+    } catch (error) {
+      console.error("Erro ao excluir relatório:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir relatório",
+        variant: "destructive"
+      });
+    }
+  };
+
   const printReport = () => {
     window.print();
   };
@@ -546,23 +573,31 @@ export const Reports = () => {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              <ReportViewer reportId={report.id}>
-                                <Button size="sm" variant="outline">
-                                  <Eye className="h-3 w-3 mr-1" />
-                                  Visualizar
-                                </Button>
-                              </ReportViewer>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => downloadPDF(report.id)}
-                              >
-                                <Download className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                           <TableCell>
+                             <div className="flex gap-1">
+                               <ReportViewer reportId={report.id}>
+                                 <Button size="sm" variant="outline">
+                                   <Eye className="h-3 w-3 mr-1" />
+                                   Visualizar
+                                 </Button>
+                               </ReportViewer>
+                               <Button 
+                                 size="sm" 
+                                 variant="outline"
+                                 onClick={() => downloadPDF(report.id)}
+                               >
+                                 <Download className="h-3 w-3" />
+                               </Button>
+                               <Button
+                                 size="sm"
+                                 variant="destructive"
+                                 onClick={() => deleteReport(report.id)}
+                                 title="Excluir"
+                               >
+                                 <Trash2 className="h-3 w-3" />
+                               </Button>
+                             </div>
+                           </TableCell>
                         </TableRow>
                       );
                     })}

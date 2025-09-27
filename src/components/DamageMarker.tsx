@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, Camera, MapPin, Plus } from "lucide-react";
 import { DamageMarker as DamageMarkerType } from "@/types/inspection";
 import CameraCapture from "./CameraCapture";
+import carDrawing from "@/assets/car-drawing.svg";
+import motorcycleDrawing from "@/assets/motorcycle-drawing.svg";
 
 interface DamageMarkerProps {
   vehicleType: 'car' | 'moto';
@@ -82,23 +84,23 @@ export default function DamageMarker({ vehicleType, damages, onDamageAdd, onDama
         )}
 
         <div 
-          className="relative bg-muted rounded-lg p-4 cursor-crosshair min-h-[200px] flex items-center justify-center"
+          className="relative bg-muted rounded-lg p-8 cursor-crosshair min-h-[300px] flex items-center justify-center"
           onClick={handleVehicleClick}
         >
           {vehicleType === 'car' ? (
-            <div className="w-32 h-20 border-2 border-foreground rounded-lg relative">
-              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-4 border-2 border-foreground rounded-t-lg"></div>
-              <div className="absolute top-2 left-2 w-2 h-2 bg-foreground rounded-full"></div>
-              <div className="absolute top-2 right-2 w-2 h-2 bg-foreground rounded-full"></div>
-              <div className="absolute bottom-2 left-2 w-2 h-2 bg-foreground rounded-full"></div>
-              <div className="absolute bottom-2 right-2 w-2 h-2 bg-foreground rounded-full"></div>
-            </div>
+            <img 
+              src={carDrawing} 
+              alt="Desenho do carro" 
+              className="w-80 h-48 text-foreground"
+              style={{ filter: 'brightness(0) saturate(100%)' }}
+            />
           ) : (
-            <div className="w-16 h-32 border-2 border-foreground rounded-lg relative">
-              <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-6 h-6 border-2 border-foreground rounded-full"></div>
-              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-foreground rounded-full"></div>
-              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-foreground rounded-full"></div>
-            </div>
+            <img 
+              src={motorcycleDrawing} 
+              alt="Desenho da moto" 
+              className="w-80 h-48 text-foreground" 
+              style={{ filter: 'brightness(0) saturate(100%)' }}
+            />
           )}
 
           {damages.map((damage) => (
