@@ -55,24 +55,39 @@ export const generateInspectionPDF = async (inspectionData: PDFInspectionData) =
   try {
     let yPosition = 20;
 
-    // Helper function to add NSA logo
+    // Helper function to add company logo
     const addLogo = async () => {
       try {
-        // Add NSA logo - we'll use a placeholder for now since we need to convert the image
-        pdf.setFillColor(59, 130, 246); // Primary blue color
-        pdf.rect(15, 15, 40, 25, 'F');
+        // Fetch company settings to get the logo
+        const { data: companySettings } = await supabase.rpc('get_company_settings');
         
+        if (companySettings && companySettings.length > 0 && companySettings[0].company_logo_url) {
+          // Use the actual company logo
+          await addImageToPDF(companySettings[0].company_logo_url, 15, 15, 40, 25);
+        } else {
+          // Fallback to blue placeholder if no logo is set
+          pdf.setFillColor(59, 130, 246); // Primary blue color
+          pdf.rect(15, 15, 40, 25, 'F');
+          
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFontSize(14);
+          pdf.setFont(undefined, 'bold');
+          pdf.text('NSA', 25, 30);
+          
+          pdf.setFontSize(8);
+          pdf.text('NORTE', 18, 35);
+          pdf.text('SECURITY', 18, 38);
+          pdf.text('ADVANCED', 18, 41);
+        }
+      } catch (error) {
+        console.warn('Could not load logo:', error);
+        // Fallback to blue placeholder on error
+        pdf.setFillColor(59, 130, 246);
+        pdf.rect(15, 15, 40, 25, 'F');
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(14);
         pdf.setFont(undefined, 'bold');
         pdf.text('NSA', 25, 30);
-        
-        pdf.setFontSize(8);
-        pdf.text('NORTE', 18, 35);
-        pdf.text('SECURITY', 18, 38);
-        pdf.text('ADVANCED', 18, 41);
-      } catch (error) {
-        console.warn('Could not load logo:', error);
       }
     };
 

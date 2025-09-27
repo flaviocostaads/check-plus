@@ -87,13 +87,13 @@ const VehicleManagement = () => {
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('vehicle-avatars')
+        .from('vehicle-photos')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('vehicle-avatars')
+        .from('vehicle-photos')
         .getPublicUrl(filePath);
 
       setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
@@ -421,64 +421,63 @@ const VehicleManagement = () => {
                 Nenhum veículo cadastrado
               </div>
             ) : (
-              <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Avatar</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Marca/Modelo</TableHead>
-                      <TableHead>Placa</TableHead>
-                      <TableHead>Cor</TableHead>
-                      <TableHead>Ano</TableHead>
-                      <TableHead>KM</TableHead>
-                      <TableHead>Localização</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                <TableBody>
+              <>
+                {/* Mobile View - Cards */}
+                <div className="block md:hidden space-y-4">
                   {vehicles.map((vehicle) => (
-                    <TableRow key={vehicle.id}>
-                      <TableCell>
-                        <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-                          {vehicle.avatar_url ? (
-                            <img 
-                              src={vehicle.avatar_url} 
-                              alt={`Avatar ${vehicle.marca_modelo}`}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Car className="h-6 w-6 text-muted-foreground" />
-                          )}
+                    <Card key={vehicle.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                              {vehicle.avatar_url ? (
+                                <img 
+                                  src={vehicle.avatar_url} 
+                                  alt={`Avatar ${vehicle.marca_modelo}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <Car className="h-6 w-6 text-muted-foreground" />
+                              )}
+                            </div>
+                            <div>
+                              <h3 className="font-semibold">{vehicle.marca_modelo}</h3>
+                              <p className="text-sm text-muted-foreground">Placa: {vehicle.placa}</p>
+                            </div>
+                          </div>
+                          <Badge variant={vehicle.vehicle_type === 'car' ? 'default' : 'secondary'}>
+                            {vehicle.vehicle_type === 'car' ? (
+                              <><Car className="h-3 w-3 mr-1" /> Carro</>
+                            ) : (
+                              <><Bike className="h-3 w-3 mr-1" /> Moto</>
+                            )}
+                          </Badge>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={vehicle.vehicle_type === 'car' ? 'default' : 'secondary'}>
-                          {vehicle.vehicle_type === 'car' ? (
-                            <><Car className="h-3 w-3 mr-1" /> Carro</>
-                          ) : (
-                            <><Bike className="h-3 w-3 mr-1" /> Moto</>
-                          )}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">{vehicle.marca_modelo}</TableCell>
-                      <TableCell>{vehicle.placa}</TableCell>
-                      <TableCell>{vehicle.cor}</TableCell>
-                      <TableCell>{vehicle.ano}</TableCell>
-                      <TableCell>{vehicle.km_atual || "-"}</TableCell>
-                      <TableCell>
-                        {vehicle.cidade && vehicle.estado 
-                          ? `${vehicle.cidade}/${vehicle.estado}` 
-                          : "-"
-                        }
-                      </TableCell>
-                      <TableCell>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                          <div>
+                            <span className="text-muted-foreground">Cor:</span> {vehicle.cor}
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Ano:</span> {vehicle.ano}
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">KM:</span> {vehicle.km_atual || "-"}
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Local:</span> {vehicle.cidade && vehicle.estado ? `${vehicle.cidade}/${vehicle.estado}` : "-"}
+                          </div>
+                        </div>
+                        
                         <div className="flex gap-2">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleEdit(vehicle)}
+                            className="flex-1"
                           >
-                            <Edit className="h-3 w-3" />
+                            <Edit className="h-3 w-3 mr-1" />
+                            Editar
                           </Button>
                           <Button
                             size="sm"
@@ -488,11 +487,87 @@ const VehicleManagement = () => {
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </CardContent>
+                    </Card>
                   ))}
-                </TableBody>
-              </Table>
+                </div>
+
+                {/* Desktop View - Table */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Avatar</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Marca/Modelo</TableHead>
+                        <TableHead>Placa</TableHead>
+                        <TableHead>Cor</TableHead>
+                        <TableHead>Ano</TableHead>
+                        <TableHead>KM</TableHead>
+                        <TableHead>Localização</TableHead>
+                        <TableHead>Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {vehicles.map((vehicle) => (
+                        <TableRow key={vehicle.id}>
+                          <TableCell>
+                            <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                              {vehicle.avatar_url ? (
+                                <img 
+                                  src={vehicle.avatar_url} 
+                                  alt={`Avatar ${vehicle.marca_modelo}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <Car className="h-6 w-6 text-muted-foreground" />
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={vehicle.vehicle_type === 'car' ? 'default' : 'secondary'}>
+                              {vehicle.vehicle_type === 'car' ? (
+                                <><Car className="h-3 w-3 mr-1" /> Carro</>
+                              ) : (
+                                <><Bike className="h-3 w-3 mr-1" /> Moto</>
+                              )}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-medium">{vehicle.marca_modelo}</TableCell>
+                          <TableCell>{vehicle.placa}</TableCell>
+                          <TableCell>{vehicle.cor}</TableCell>
+                          <TableCell>{vehicle.ano}</TableCell>
+                          <TableCell>{vehicle.km_atual || "-"}</TableCell>
+                          <TableCell>
+                            {vehicle.cidade && vehicle.estado 
+                              ? `${vehicle.cidade}/${vehicle.estado}` 
+                              : "-"
+                            }
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEdit(vehicle)}
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDelete(vehicle.id)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

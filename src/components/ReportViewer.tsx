@@ -344,9 +344,29 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
                       <div className="ml-4">
                         {getStatusBadge(item.status)}
                       </div>
-                    </div>
-                    {/* Photos removed from print view as requested */}
-                  </div>
+                     </div>
+                     {/* Show photos in view but hide in print */}
+                     {item.inspection_photos && item.inspection_photos.length > 0 && (
+                       <div className="mt-3 no-print">
+                         <p className="text-sm font-medium mb-2">Fotos do item:</p>
+                         <div className="grid grid-cols-3 gap-2">
+                           {item.inspection_photos.map((photo: any, photoIndex: number) => (
+                             <div key={photoIndex} className="relative group">
+                               <img
+                                 src={photo.photo_url}
+                                 alt={`Foto ${item.checklist_templates.name} - ${photoIndex + 1}`}
+                                 className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                 onClick={() => window.open(photo.photo_url, '_blank')}
+                               />
+                               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all rounded flex items-center justify-center">
+                                 <Eye className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                               </div>
+                             </div>
+                           ))}
+                         </div>
+                       </div>
+                     )}
+                   </div>
                 ))}
               </CardContent>
             </Card>
