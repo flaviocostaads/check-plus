@@ -198,10 +198,13 @@ export default function InspectionView({
             }
 
             // Update inspection with signatures
-            if (signature) {
+            if (signature || inspectorSignature) {
               await supabase
                 .from('inspections')
-                .update({ signature_data: signature })
+                .update({ 
+                  signature_data: signature,
+                  inspector_signature_data: inspectorSignature 
+                })
                 .eq('id', inspectionId);
             }
           }

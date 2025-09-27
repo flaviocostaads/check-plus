@@ -309,6 +309,7 @@ export type Database = {
           driver_name: string
           id: string
           inspector_id: string
+          inspector_signature_data: string | null
           latitude: number | null
           longitude: number | null
           odometer_photo_url: string | null
@@ -325,6 +326,7 @@ export type Database = {
           driver_name: string
           id?: string
           inspector_id: string
+          inspector_signature_data?: string | null
           latitude?: number | null
           longitude?: number | null
           odometer_photo_url?: string | null
@@ -341,6 +343,7 @@ export type Database = {
           driver_name?: string
           id?: string
           inspector_id?: string
+          inspector_signature_data?: string | null
           latitude?: number | null
           longitude?: number | null
           odometer_photo_url?: string | null

@@ -24,6 +24,7 @@ interface InspectionDetails {
   driver_cnh_validade: string;
   odometer_photo_url?: string;
   signature_data?: string;
+  inspector_signature_data?: string;
   latitude?: number;
   longitude?: number;
   vehicles: {
@@ -366,26 +367,50 @@ export default function ReportViewer({ reportId, children }: ReportViewerProps) 
               </Card>
             )}
 
-            {/* Assinatura (se existir) */}
-            {inspection.signature_data && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Assinatura do Condutor</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="border rounded-lg p-4 bg-muted/20">
-                    <img 
-                      src={inspection.signature_data} 
-                      alt="Assinatura do condutor" 
-                      className="max-w-full h-32 object-contain mx-auto"
-                    />
-                    <p className="text-center text-sm text-muted-foreground mt-2">
-                      Assinado por: {inspection.driver_name}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {/* Assinaturas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Assinatura do motorista */}
+              {inspection.signature_data && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Assinatura do Condutor</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="border rounded-lg p-4 bg-muted/20">
+                      <img 
+                        src={inspection.signature_data} 
+                        alt="Assinatura do condutor" 
+                        className="max-w-full h-32 object-contain mx-auto"
+                      />
+                      <p className="text-center text-sm text-muted-foreground mt-2">
+                        Assinado por: {inspection.driver_name}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Assinatura do inspetor */}
+              {inspection.inspector_signature_data && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Assinatura do Inspetor</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="border rounded-lg p-4 bg-muted/20">
+                      <img 
+                        src={inspection.inspector_signature_data} 
+                        alt="Assinatura do inspetor" 
+                        className="max-w-full h-32 object-contain mx-auto"
+                      />
+                      <p className="text-center text-sm text-muted-foreground mt-2">
+                        NSA - Norte Security Advanced
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
 
             {/* Localização da Inspeção */}
             {(inspection.latitude && inspection.longitude) && (
