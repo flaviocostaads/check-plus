@@ -63,8 +63,8 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Check user role
-    const { data: profile, error: profileError } = await supabaseAnon
+    // Check user role using admin client to bypass RLS
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role')
       .eq('user_id', user.id)
