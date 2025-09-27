@@ -111,13 +111,20 @@ const Dashboard = ({
 
       if (vehiclesError) throw vehiclesError;
 
-      // Fetch active drivers count
-      const { count: driversCount, error: driversError } = await supabase
-        .from('drivers')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_active', true);
-
-      if (driversError) throw driversError;
+      // Try to fetch active drivers count - handle permission errors gracefully
+      let driversCount = 0;
+      try {
+        const { data: driversData, error: driversError } = await supabase
+          .rpc('get_drivers_basic_info');
+        
+        if (!driversError && driversData) {
+          driversCount = driversData.length;
+        }
+      } catch (error) {
+        console.warn('Could not fetch drivers count:', error);
+        // Fallback to 0 if no access
+        driversCount = 0;
+      }
 
       // Calculate stats
       const totalInspections = inspectionsData?.length || 0;
@@ -142,7 +149,7 @@ const Dashboard = ({
         criticalIssues,
         monthlyGrowth: 0 // This would need historical data to calculate
       });
-      setActiveDriversCount(driversCount || 0);
+      setActiveDriversCount(driversCount);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast.error("Erro ao carregar dados do dashboard");
