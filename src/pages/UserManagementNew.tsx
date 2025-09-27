@@ -98,26 +98,32 @@ export default function UserManagementNew() {
         if (error) throw error;
         toast.success('Usuário atualizado com sucesso');
       } else {
-        // Create new user
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-          email: formData.email,
-          password: formData.password,
-          email_confirm: true
-        });
+        // Create new user using edge function
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          toast.error('Sessão expirada. Faça login novamente.');
+          return;
+        }
 
-        if (authError) throw authError;
-
-        // Create profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: authData.user.id,
+        const { data, error } = await supabase.functions.invoke('create-user', {
+          body: {
             email: formData.email,
+            password: formData.password,
             name: formData.name,
             role: formData.role
-          });
+          },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
+        });
 
-        if (profileError) throw profileError;
+        if (error) throw error;
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
         toast.success('Usuário criado com sucesso');
       }
 
@@ -152,18 +158,27 @@ export default function UserManagementNew() {
     }
 
     try {
-      // Delete profile first
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', user.id);
-
-      if (profileError) throw profileError;
-
-      // Delete auth user
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.user_id);
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (authError) throw authError;
+      if (!session) {
+        toast.error('Sessão expirada. Faça login novamente.');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: {
+          userId: user.user_id
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
 
       toast.success('Usuário excluído com sucesso');
       fetchUsers();
@@ -176,7 +191,7 @@ export default function UserManagementNew() {
   const handleResetPassword = async (user: UserProfile) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: window.location.origin
+        redirectTo: `${window.location.origin}/auth/reset-password`
       });
 
       if (error) throw error;
