@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface UserProfile {
   email: string;
   name: string;
-  role: 'admin' | 'operator';
+  role: 'admin' | 'supervisor' | 'inspector' | 'operator';
 }
 
 interface AppHeaderProps {
@@ -104,7 +104,9 @@ export const AppHeader = ({
           <div className="flex items-center space-x-4">
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
               <User className="h-3 w-3 mr-1" />
-              {user.role === "admin" ? "Administrador" : "Operador"}
+              {user.role === "admin" ? "Administrador" : 
+               user.role === "supervisor" ? "Supervisor" :
+               user.role === "inspector" ? "Inspetor" : "Operador"}
             </Badge>
             
             <div className="flex items-center space-x-2">

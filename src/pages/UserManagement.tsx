@@ -18,7 +18,7 @@ interface UserProfile {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'operator';
+  role: 'admin' | 'supervisor' | 'inspector' | 'operator';
   user_id: string;
   created_at: string;
 }
@@ -31,7 +31,7 @@ const UserManagement = () => {
   const [formData, setFormData] = useState({
     email: "",
     name: "",
-    role: "" as 'admin' | 'operator',
+    role: "" as 'admin' | 'supervisor' | 'inspector' | 'operator',
     password: "",
   });
 

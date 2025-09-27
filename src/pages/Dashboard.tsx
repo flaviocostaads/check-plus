@@ -34,7 +34,7 @@ interface DashboardProps {
   user?: {
     email: string;
     name: string;
-    role: 'admin' | 'operator';
+    role: 'admin' | 'supervisor' | 'inspector' | 'operator';
   };
   onNewInspection?: () => void;  
   onLogout?: () => void;
@@ -200,7 +200,9 @@ const Dashboard = ({
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 w-fit">
               <Users className="h-3 w-3 mr-1" />
-              {user?.role === "admin" ? "Administrador" : "Operador"}
+              {user?.role === "admin" ? "Administrador" : 
+               user?.role === "supervisor" ? "Supervisor" :
+               user?.role === "inspector" ? "Inspetor" : "Operador"}
             </Badge>
             
             <div className="flex items-center space-x-2">
@@ -346,8 +348,8 @@ const Dashboard = ({
                   <Users className="h-4 w-4 mr-2" />
                   Motoristas
                 </Button>
-                {(user?.role === 'admin') && (
-                  <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/users'}>
+                {(user?.role === 'admin' || user?.role === 'supervisor') && (
+                  <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/user-management'}>
                     <Users className="h-4 w-4 mr-2" />
                     Usuários
                   </Button>

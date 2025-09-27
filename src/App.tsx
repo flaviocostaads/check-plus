@@ -10,6 +10,7 @@ import VehicleManagement from "./pages/VehicleManagement";
 import ChecklistManagement from "./pages/ChecklistManagement";
 import InspectionHistory from "./pages/InspectionHistory";
 import UserManagement from "./pages/UserManagement";
+import UserManagementNew from "./pages/UserManagementNew";
 import Settings from "./pages/Settings";
 import { Reports } from "./pages/Reports";
 import NewInspection from "./pages/NewInspection";
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/inspection" element={<InspectionInterface />} />
             <Route path="/drivers" element={<DriverManagement />} />
             <Route path="/users" element={<UserManagement />} />
+            <Route path="/user-management" element={<UserManagementNew />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

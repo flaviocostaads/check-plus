@@ -439,6 +439,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_role_permissions: {
+        Row: {
+          can_access_reports: boolean | null
+          can_create_users: boolean | null
+          can_delete_users: boolean | null
+          can_edit_all_inspections: boolean | null
+          can_manage_drivers: boolean | null
+          can_manage_settings: boolean | null
+          can_manage_vehicles: boolean | null
+          can_view_all_inspections: boolean | null
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          can_access_reports?: boolean | null
+          can_create_users?: boolean | null
+          can_delete_users?: boolean | null
+          can_edit_all_inspections?: boolean | null
+          can_manage_drivers?: boolean | null
+          can_manage_settings?: boolean | null
+          can_manage_vehicles?: boolean | null
+          can_view_all_inspections?: boolean | null
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          can_access_reports?: boolean | null
+          can_create_users?: boolean | null
+          can_delete_users?: boolean | null
+          can_edit_all_inspections?: boolean | null
+          can_manage_drivers?: boolean | null
+          can_manage_settings?: boolean | null
+          can_manage_vehicles?: boolean | null
+          can_view_all_inspections?: boolean | null
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
+      }
       user_sessions: {
         Row: {
           created_at: string | null
@@ -590,6 +632,19 @@ export type Database = {
           nome_completo: string
           telefone: string
           updated_at: string
+        }[]
+      }
+      get_user_permissions: {
+        Args: { user_role: Database["public"]["Enums"]["user_role"] }
+        Returns: {
+          can_access_reports: boolean
+          can_create_users: boolean
+          can_delete_users: boolean
+          can_edit_all_inspections: boolean
+          can_manage_drivers: boolean
+          can_manage_settings: boolean
+          can_manage_vehicles: boolean
+          can_view_all_inspections: boolean
         }[]
       }
       log_data_access: {

@@ -7,7 +7,7 @@ interface UserProfile {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'operator';
+  role: 'admin' | 'supervisor' | 'inspector' | 'operator';
   user_id: string;
   created_at: string;
 }
@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           user_id: userId,
           email: currentUser?.email || '',
           name: currentUser?.user_metadata?.name || currentUser?.email || '',
-          role: (currentUser?.user_metadata?.role as 'admin' | 'operator') || 'admin',
+          role: (currentUser?.user_metadata?.role as 'admin' | 'supervisor' | 'inspector' | 'operator') || 'admin',
           created_at: new Date().toISOString()
         });
         return;
@@ -127,7 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             user_id: userId,
             email: currentUser?.email || '',
             name: userName,
-            role: userRole as 'admin' | 'operator',
+            role: userRole as 'admin' | 'supervisor' | 'inspector' | 'operator',
             created_at: new Date().toISOString()
           });
         } else {
@@ -142,7 +142,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         user_id: userId,
         email: currentUser?.email || '',
         name: currentUser?.user_metadata?.name || currentUser?.email || '',
-        role: (currentUser?.user_metadata?.role as 'admin' | 'operator') || 'admin',
+        role: (currentUser?.user_metadata?.role as 'admin' | 'supervisor' | 'inspector' | 'operator') || 'admin',
         created_at: new Date().toISOString()
       });
     } finally {

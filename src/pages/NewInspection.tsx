@@ -91,27 +91,27 @@ export default function NewInspection() {
         </div>
 
         {/* Progress Steps - Mobile optimized */}
-        <div className="flex items-center justify-center mb-6 sm:mb-8 overflow-x-auto">
-          <div className="flex items-center space-x-2 sm:space-x-4 min-w-max px-4">
-            <div className={`flex items-center space-x-1 sm:space-x-2 ${step >= 1 ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm ${step >= 1 ? 'bg-primary text-white' : 'bg-muted'}`}>
+        <div className="mb-6 sm:mb-8 bg-card/50 rounded-lg p-3 sm:p-4">
+          <div className="flex items-center justify-between space-x-2 sm:space-x-4">
+            <div className={`flex flex-col items-center space-y-1 flex-1 ${step >= 1 ? 'text-primary' : 'text-muted-foreground'}`}>
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-medium ${step >= 1 ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
                 1
               </div>
-              <span className="font-medium text-xs sm:text-sm">Selecionar Veículo</span>
+              <span className="text-xs sm:text-sm font-medium text-center">Veículo</span>
             </div>
-            <div className="w-6 sm:w-12 h-px bg-border"></div>
-            <div className={`flex items-center space-x-1 sm:space-x-2 ${step >= 2 ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm ${step >= 2 ? 'bg-primary text-white' : 'bg-muted'}`}>
+            <div className="w-8 sm:w-16 h-px bg-border mt-[-1rem]"></div>
+            <div className={`flex flex-col items-center space-y-1 flex-1 ${step >= 2 ? 'text-primary' : 'text-muted-foreground'}`}>
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-medium ${step >= 2 ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
                 2
               </div>
-              <span className="font-medium text-xs sm:text-sm">Selecionar Motorista</span>
+              <span className="text-xs sm:text-sm font-medium text-center">Motorista</span>
             </div>
-            <div className="w-6 sm:w-12 h-px bg-border"></div>
-            <div className={`flex items-center space-x-1 sm:space-x-2 ${step >= 3 ? 'text-primary' : 'text-muted-foreground'}`}>
-              <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm ${step >= 3 ? 'bg-primary text-white' : 'bg-muted'}`}>
+            <div className="w-8 sm:w-16 h-px bg-border mt-[-1rem]"></div>
+            <div className={`flex flex-col items-center space-y-1 flex-1 ${step >= 3 ? 'text-primary' : 'text-muted-foreground'}`}>
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-medium ${step >= 3 ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
                 3
               </div>
-              <span className="font-medium text-xs sm:text-sm">Iniciar Inspeção</span>
+              <span className="text-xs sm:text-sm font-medium text-center">Confirmar</span>
             </div>
           </div>
         </div>

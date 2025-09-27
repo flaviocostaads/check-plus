@@ -40,12 +40,8 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
   const fetchDrivers = async () => {
     setLoading(true);
     try {
-      // Direct query for active drivers
-      const { data, error } = await supabase
-        .from('drivers')
-        .select('id, nome_completo, cpf, cnh_numero, cnh_validade, telefone, avatar_url, is_active')
-        .eq('is_active', true)
-        .order('nome_completo');
+      // Use the secure function to get driver data based on user role
+      const { data, error } = await supabase.rpc('get_drivers_basic_info');
 
       if (error) {
         console.error('Database error:', error);
@@ -53,15 +49,15 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
         return;
       }
       
-      // Map the data with masking for security
+      // Map the data for the component
       const mappedDrivers = (data || []).map(driver => ({
         id: driver.id,
         nome_completo: driver.nome_completo,
-        cpf: driver.cpf ? driver.cpf.substring(0, 3) + '.***.***-**' : '***.***.***-**',
-        cnh_numero: driver.cnh_numero ? driver.cnh_numero.substring(0, 3) + '********' : '***********',
-        cnh_validade: driver.cnh_validade,
-        telefone: driver.telefone ? driver.telefone.substring(0, 2) + '*****-****' : null,
-        email: '', // Not available in selector view
+        cpf: '***.***.***-**', // Hide for security
+        cnh_numero: '***********', // Hide for security
+        cnh_validade: new Date().toISOString().split('T')[0], // Use current date as placeholder
+        telefone: null,
+        email: '',
         avatar_url: driver.avatar_url,
         is_active: driver.is_active
       }));
@@ -94,108 +90,98 @@ export default function DriverSelector({ onNext, onBack }: DriverSelectorProps) 
   );
 
   return (
-    <div className="min-h-screen bg-gradient-surface p-4">
-      <div className="mx-auto max-w-md space-y-6 pt-4">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" onClick={onBack}>
-            <ChevronRight className="w-5 h-5 rotate-180" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Selecionar Motorista</h1>
-            <p className="text-muted-foreground">Escolha o motorista para a inspeção</p>
-          </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Selecionar Motorista</h3>
+          <p className="text-sm text-muted-foreground">Escolha o motorista para a inspeção</p>
         </div>
+        <Button variant="outline" size="sm" onClick={() => setIsAddDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Novo
+        </Button>
+      </div>
 
-        <Card className="shadow-medium">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Motoristas Cadastrados</CardTitle>
-              <Button variant="outline" size="sm" onClick={() => setIsAddDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo
-              </Button>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Buscar motorista..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            {/* Driver Selection */}
-            {loading ? (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground">Carregando motoristas...</p>
-              </div>
-            ) : filteredDrivers.length > 0 ? (
-              <div className="space-y-3 max-h-64 overflow-y-auto">
-                {filteredDrivers.map((driver) => (
-                  <div
-                    key={driver.id}
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                      selectedDriverId === driver.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:bg-muted/50'
-                    }`}
-                    onClick={() => setSelectedDriverId(driver.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={driver.avatar_url} />
-                        <AvatarFallback>
-                          {driver.nome_completo.split(' ').map(n => n[0]).join('').toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-medium">{driver.nome_completo}</p>
-                        <p className="text-sm text-muted-foreground">
-                          CPF: {driver.cpf} • CNH: {driver.cnh_numero}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Nenhum motorista encontrado</h3>
-                <p className="text-muted-foreground mb-4">
-                  {searchTerm ? "Tente ajustar os filtros de busca" : "Cadastre um motorista para continuar"}
-                </p>
-                <Button onClick={() => setIsAddDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Cadastrar Motorista
-                </Button>
-              </div>
-            )}
-
-            <Button 
-              variant="hero" 
-              size="lg" 
-              className="w-full mt-6"
-              disabled={!selectedDriverId}
-              onClick={handleNext}
-            >
-              Continuar com Motorista Selecionado
-              <ChevronRight className="w-5 h-5 ml-2" />
-            </Button>
-          </CardContent>
-        </Card>
-        
-        <DriverFormDialog 
-          open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
-          onDriverCreated={handleDriverCreated}
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+        <Input
+          placeholder="Buscar motorista..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
         />
       </div>
+
+      {/* Driver Selection */}
+      {loading ? (
+        <div className="text-center py-6">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando motoristas...</p>
+        </div>
+      ) : filteredDrivers.length > 0 ? (
+        <div className="space-y-3 max-h-80 overflow-y-auto">
+          {filteredDrivers.map((driver) => (
+            <div
+              key={driver.id}
+              className={`p-4 rounded-xl border-2 cursor-pointer transition-all btn-touch ${
+                selectedDriverId === driver.id
+                  ? 'border-primary bg-primary/10 shadow-md'
+                  : 'border-border hover:border-primary/50 hover:bg-muted/30'
+              }`}
+              onClick={() => setSelectedDriverId(driver.id)}
+            >
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={driver.avatar_url} />
+                  <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+                    {driver.nome_completo.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className="font-semibold text-base">{driver.nome_completo}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Motorista cadastrado
+                  </p>
+                </div>
+                {selectedDriverId === driver.id && (
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                    <ChevronRight className="w-4 h-4 text-white" />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-xl font-semibold mb-2">Nenhum motorista encontrado</h3>
+          <p className="text-muted-foreground mb-6">
+            {searchTerm ? "Tente ajustar os filtros de busca" : "Cadastre um motorista para continuar"}
+          </p>
+          <Button onClick={() => setIsAddDialogOpen(true)} className="btn-touch">
+            <Plus className="h-4 w-4 mr-2" />
+            Cadastrar Motorista
+          </Button>
+        </div>
+      )}
+
+      <Button 
+        size="lg" 
+        className="w-full bg-gradient-primary hover:opacity-90 btn-touch"
+        disabled={!selectedDriverId}
+        onClick={handleNext}
+      >
+        Continuar com Motorista Selecionado
+        <ChevronRight className="w-5 h-5 ml-2" />
+      </Button>
+      
+      <DriverFormDialog 
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onDriverCreated={handleDriverCreated}
+      />
     </div>
   );
 }

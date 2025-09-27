@@ -34,7 +34,7 @@ export const AuthenticatedLayout: React.FC<AuthenticatedLayoutProps> = ({
         user={userProfile || { 
           email: user?.email || '', 
           name: user?.email || '', 
-          role: 'admin' 
+          role: 'admin' as 'admin' | 'supervisor' | 'inspector' | 'operator'
         }}
         onLogout={logout}
       />

@@ -184,4 +184,15 @@ All colors MUST be HSL. Built for mobile-first field use.
   .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
+
+  /* Mobile touch optimizations */
+  .btn-touch {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  @media (max-width: 768px) {
+    .btn-touch {
+      @apply p-3;
+    }
+  }
 }
