@@ -7,11 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Car, Bike, Camera, Image, ArrowLeft } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Edit, Trash2, Car, Bike, Camera, Image, ArrowLeft, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { VehicleType } from "@/types/inspection";
 import { Link, useNavigate } from "react-router-dom";
+import InspectionHistoryList from "@/components/InspectionHistoryList";
 
 interface Vehicle {
   id: string;
@@ -23,7 +25,6 @@ interface Vehicle {
   km_atual?: string;
   vehicle_type: VehicleType;
   photo_url?: string;
-  avatar_url?: string;
   cidade?: string;
   estado?: string;
   created_at: string;
@@ -44,7 +45,6 @@ const VehicleManagement = () => {
     km_atual: "",
     vehicle_type: "" as VehicleType,
     photo_url: "",
-    avatar_url: "",
     cidade: "",
     estado: "",
   });
@@ -96,8 +96,8 @@ const VehicleManagement = () => {
         .from('vehicle-photos')
         .getPublicUrl(filePath);
 
-      setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
-      toast.success("Avatar carregado com sucesso!");
+      setFormData(prev => ({ ...prev, photo_url: publicUrl }));
+      toast.success("Foto carregada com sucesso!");
     } catch (error) {
       console.error("Erro ao fazer upload:", error);
       toast.error("Erro ao carregar avatar");
@@ -157,7 +157,6 @@ const VehicleManagement = () => {
       km_atual: vehicle.km_atual || "",
       vehicle_type: vehicle.vehicle_type,
       photo_url: vehicle.photo_url || "",
-      avatar_url: vehicle.avatar_url || "",
       cidade: vehicle.cidade || "",
       estado: vehicle.estado || "",
     });
@@ -192,7 +191,6 @@ const VehicleManagement = () => {
       km_atual: "",
       vehicle_type: "" as VehicleType,
       photo_url: "",
-      avatar_url: "",
       cidade: "",
       estado: "",
     });
@@ -326,13 +324,13 @@ const VehicleManagement = () => {
                 </div>
 
                 <div>
-                  <Label>Avatar do Veículo</Label>
+                  <Label>Foto do Veículo</Label>
                   <div className="space-y-2">
-                    {formData.avatar_url && (
+                    {formData.photo_url && (
                       <div className="relative w-20 h-20 bg-muted rounded-lg overflow-hidden">
                         <img 
-                          src={formData.avatar_url} 
-                          alt="Avatar do veículo" 
+                          src={formData.photo_url} 
+                          alt="Foto do veículo" 
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -346,7 +344,7 @@ const VehicleManagement = () => {
                             ) : (
                               <>
                                 <Camera className="h-4 w-4 mr-2" />
-                                {formData.avatar_url ? "Alterar Avatar" : "Adicionar Avatar"}
+                                {formData.photo_url ? "Alterar Foto" : "Adicionar Foto"}
                               </>
                             )}
                           </span>
@@ -359,12 +357,12 @@ const VehicleManagement = () => {
                           disabled={uploading}
                         />
                       </label>
-                      {formData.avatar_url && (
+                      {formData.photo_url && (
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
-                          onClick={() => setFormData(prev => ({ ...prev, avatar_url: "" }))}
+                          onClick={() => setFormData(prev => ({ ...prev, photo_url: "" }))}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -409,11 +407,21 @@ const VehicleManagement = () => {
           </Dialog>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Veículos Cadastrados</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Tabs defaultValue="vehicles" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="vehicles">Veículos</TabsTrigger>
+            <TabsTrigger value="history">
+              <FileText className="h-4 w-4 mr-2" />
+              Histórico de Inspeções
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="vehicles">
+            <Card>
+              <CardHeader>
+                <CardTitle>Veículos Cadastrados</CardTitle>
+              </CardHeader>
+              <CardContent>
             {loading ? (
               <div className="text-center py-4">Carregando...</div>
             ) : vehicles.length === 0 ? (
@@ -430,10 +438,10 @@ const VehicleManagement = () => {
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-                              {vehicle.avatar_url ? (
+                              {vehicle.photo_url ? (
                                 <img 
-                                  src={vehicle.avatar_url} 
-                                  alt={`Avatar ${vehicle.marca_modelo}`}
+                                  src={vehicle.photo_url} 
+                                  alt={`Foto ${vehicle.marca_modelo}`}
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
@@ -513,10 +521,10 @@ const VehicleManagement = () => {
                         <TableRow key={vehicle.id}>
                           <TableCell>
                             <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-                              {vehicle.avatar_url ? (
+                              {vehicle.photo_url ? (
                                 <img 
-                                  src={vehicle.avatar_url} 
-                                  alt={`Avatar ${vehicle.marca_modelo}`}
+                                  src={vehicle.photo_url} 
+                                  alt={`Foto ${vehicle.marca_modelo}`}
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
@@ -571,8 +579,14 @@ const VehicleManagement = () => {
             )}
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </TabsContent>
+
+      <TabsContent value="history">
+        <InspectionHistoryList />
+      </TabsContent>
+    </Tabs>
+  </div>
+</div>
   );
 };
 

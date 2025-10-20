@@ -21,13 +21,15 @@ import {
   AlertTriangle,
   Camera,
   Shield,
-  Eye
+  Eye,
+  FileText
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import DriverFormDialog from "@/components/DriverFormDialog";
 import SensitiveDataAccessDialog from "@/components/SensitiveDataAccessDialog";
 import SecurityAuditDashboard from "@/components/SecurityAuditDashboard";
+import InspectionHistoryList from "@/components/InspectionHistoryList";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Driver {
@@ -303,6 +305,10 @@ export default function DriverManagement() {
         <Tabs defaultValue="drivers" className="space-y-6">
           <TabsList>
             <TabsTrigger value="drivers">Motoristas</TabsTrigger>
+            <TabsTrigger value="history">
+              <FileText className="h-4 w-4 mr-2" />
+              Histórico de Inspeções
+            </TabsTrigger>
             {userProfile?.role === 'admin' && (
               <TabsTrigger value="audit">Auditoria de Segurança</TabsTrigger>
             )}
@@ -483,6 +489,10 @@ export default function DriverManagement() {
                 })}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="history">
+            <InspectionHistoryList />
           </TabsContent>
 
           {userProfile?.role === 'admin' && (
