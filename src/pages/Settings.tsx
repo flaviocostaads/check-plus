@@ -20,11 +20,13 @@ import {
   Trash2,
   Plus,
   ExternalLink,
-  ArrowLeft
+  ArrowLeft,
+  BookOpen
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import IntegrationDocs from "@/components/IntegrationDocs";
 
 interface CompanySettings {
   id: string;
@@ -206,6 +208,27 @@ const Settings = () => {
     } catch (error) {
       console.error("Erro ao adicionar integração:", error);
       toast.error("Erro ao adicionar integração");
+    }
+  };
+
+  const deleteIntegration = async (integrationId: string) => {
+    if (!confirm("Tem certeza que deseja excluir esta integração?")) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("integrations")
+        .delete()
+        .eq("id", integrationId);
+
+      if (error) throw error;
+      
+      setIntegrations(prev => prev.filter(int => int.id !== integrationId));
+      toast.success("Integração excluída com sucesso!");
+    } catch (error) {
+      console.error("Erro ao excluir integração:", error);
+      toast.error("Erro ao excluir integração");
     }
   };
 
@@ -419,10 +442,11 @@ const Settings = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="company">Empresa</TabsTrigger>
           <TabsTrigger value="appearance">Aparência</TabsTrigger>
           <TabsTrigger value="integrations">Integrações</TabsTrigger>
+          <TabsTrigger value="docs">Documentação</TabsTrigger>
           <TabsTrigger value="admin">Administrativo</TabsTrigger>
         </TabsList>
 
@@ -656,6 +680,14 @@ const Settings = () => {
                           <Button variant="ghost" size="sm">
                             <ExternalLink className="h-4 w-4" />
                           </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => deleteIntegration(integration.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -664,6 +696,10 @@ const Settings = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="docs" className="space-y-6">
+          <IntegrationDocs />
         </TabsContent>
 
         <TabsContent value="admin" className="space-y-6">

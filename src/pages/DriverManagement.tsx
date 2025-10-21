@@ -72,49 +72,27 @@ export default function DriverManagement() {
   const fetchDrivers = async () => {
     setLoading(true);
     try {
-      // Check if user is admin and has sensitive session
-      const isAdmin = userProfile?.role === 'admin';
-      
-      if (isAdmin && sensitiveSessionToken) {
-        // Use secure function with session token for admin with sensitive access
-        const { data, error } = await supabase.rpc('get_driver_data_secure', {
-          p_driver_id: null, // Get all drivers
-          p_session_token: sensitiveSessionToken
-        });
+      // For admins and supervisors, fetch full unmasked data directly
+      if (userProfile?.role === 'admin' || userProfile?.role === 'supervisor') {
+        const { data, error } = await supabase
+          .from('drivers')
+          .select('*')
+          .order('nome_completo');
 
         if (error) {
-          console.error('Error with secure access:', error);
-          // Fallback to basic info
-          await fetchBasicDriverInfo();
-          return;
+          console.error('Error fetching full driver data:', error);
+          throw error;
         }
-
-        // Map secure data
-        const mappedData = (data || []).map(driver => ({
-          id: driver.id,
-          nome_completo: driver.nome_completo,
-          cpf: driver.cpf,
-          cnh_numero: driver.cnh_numero,
-          cnh_validade: driver.cnh_validade,
-          telefone: driver.telefone,
-          email: driver.email,
-          endereco: driver.endereco,
-          avatar_url: driver.avatar_url,
-          is_active: driver.is_active,
-          created_at: driver.created_at,
-          updated_at: driver.updated_at
-        }));
-
-        setDrivers(mappedData);
+        
+        setDrivers(data || []);
       } else {
-        // Use basic info for non-admin or admin without session
+        // For operators and inspectors, fetch basic info
         await fetchBasicDriverInfo();
       }
       
     } catch (error) {
       console.error('Error in fetchDrivers:', error);
       toast.error('Erro ao carregar motoristas');
-      await fetchBasicDriverInfo(); // Fallback
     } finally {
       setLoading(false);
     }

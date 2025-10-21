@@ -43,17 +43,27 @@ export default function DriverDetail() {
 
       const foundDriver = data?.find((d: any) => d.id === id);
       if (foundDriver) {
-        // Fetch full details if available
+        // Fetch full details directly from drivers table
         const { data: fullData, error: fullError } = await supabase
           .from('drivers')
           .select('*')
           .eq('id', id)
-          .single();
+          .maybeSingle();
 
         if (!fullError && fullData) {
           setDriver(fullData);
         } else {
-          setDriver(foundDriver);
+          // If direct access fails, use basic info with defaults for missing fields
+          setDriver({
+            ...foundDriver,
+            cpf: '***.***.***-**',
+            cnh_numero: '***********',
+            cnh_validade: 'N/A',
+            telefone: null,
+            email: null,
+            endereco: null,
+            created_at: new Date().toISOString()
+          });
         }
       }
     } catch (error) {
